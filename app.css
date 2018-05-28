@@ -1,0 +1,30 @@
+
+* {
+  box-sizing: border-box;
+  color: rgb(80, 80, 80);
+}
+
+.draggr-item p {
+  margin: 0;
+  width: 50%;
+}
+
+.draggr-wrapper {
+  max-width: 250px;
+}
+
+.draggr-item {
+  height: 50px;
+  border: 1px solid rgb(150, 150, 150);
+  background: rgb(200, 200, 200);
+  cursor: move;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.draggr-ghost {
+  color: rgb(102, 138, 255);
+  height: 50px;
+  border: 1px solid rgb(128, 159, 255);
+  background: rgba(230, 236, 255, .8);
+}

@@ -1,0 +1,54 @@
+
+# Logs
+#server/logs
+#*.log
+
+# Ignore NYC data
+#.nyc_output
+
+# Test report folder and coverage reports
+#test_reports
+#tests/e2e/reports
+#tests/**/coverage/**
+
+# Dependency directory
+#node_modules
+#npm-debug.log
+
+# SASS temp files
+#.sass-cache
+
+# Sublime
+.sublime-project
+*.sublime-project
+*.sublime-workspace
+
+# OSX Wreckage
+.DS_Store
+Thumbs.db
+
+# Data folders
+#uploads
+#server/data
+
+# Ignore the public folder. We build into it from /client.
+#server/public/*
+
+# Ignore the mailtrap configuration
+#tests/util/mailtrap.config.js
+
+# Ignore everything in the config folder,
+# except for the index and template file.
+#server/config/*
+#!server/config/index.js
+#!server/config/config.template.js
+
+# ignore source maps
+#*.map
+
+# ignore diff files
+#*.diff
+
+# npm package lock file
+#package-lock.json
+
