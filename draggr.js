@@ -6,6 +6,7 @@ console.log("FOUND draggr.js");
 
 // WRAP LATER
 var moveEl;
+var ghostEl;
 
 function dragStart(e) { // el.target is the source node!
   moveEl = e.target;
@@ -23,8 +24,13 @@ function dragOver(e) {
   if(e.preventDefault) {
     e.preventDefault(); // Necessary. Allows us to drop!
   }
-  let item = event.target.closest('.draggr-item');
-  if(item) item.style.border = "2px dashed #00f";
+  let item = e.target.closest('.draggr-item');
+  if(item) {
+    item.style.border = "2px dashed #00f";
+    // move teh ghost?
+    item.parentNode.insertBefore(ghostEl, item.nextSibling);
+  }
+
   e.dataTransfer.dropEffect = 'move'; // hmm....
 
 }
@@ -63,11 +69,11 @@ function dragDrop(e) {
 
 // creates a ghost object AFTER el in el's parent.
 function makeGhost(el) {
-  var newItem = document.createElement("DIV");
-  newItem.className = "draggr-ghost";
+  ghostEl = document.createElement("DIV");
+  ghostEl.className = "draggr-ghost";
+
   // parent.insertBefore(newItem, el);
-  // TODO: save as a global!
-  el.parentNode.insertBefore(newItem, el.nextSibling);
+  el.parentNode.insertBefore(ghostEl, el.nextSibling);
 }
 
 
