@@ -7,11 +7,17 @@ console.log("FOUND draggr.js");
 // WRAP LATER
 var moveEl;
 var ghostEl;
+var dragOffsetX;
+var dropItem;
+
 
 function dragStart(e) { // el.target is the source node!
   moveEl = e.target;
   e.target.style.opacity = '0.4';
   this.style.border = "1px solid #f0f";
+
+  var offsetLeft = e.target.offsetLeft;
+  dragOffsetX = e.offsetX;
 
   makeGhost(e.target);
 
@@ -24,11 +30,28 @@ function dragOver(e) {
   if(e.preventDefault) {
     e.preventDefault(); // Necessary. Allows us to drop!
   }
+
   let item = e.target.closest('.draggr-item');
   if(item) {
     item.style.border = "2px dashed #00f";
-    // move teh ghost?
     item.parentNode.insertBefore(ghostEl, item.nextSibling);
+  }
+
+  // bump if we are on the ghost element and X > 50px offset from the side
+  if(e.target === ghostEl) {
+    // let prevEl = ghostEl.previousSibling;
+    // let leftSide = prevEl.offsetLeft;
+    if(e.offsetX > dragOffsetX + 50) {
+      console.log("bumpus");
+      ghostEl.style.marginLeft = "50px";
+    }
+    else if(e.offsetX > dragOffsetX) {
+      return;
+    }
+    else {
+      ghostEl.style.marginLeft = "";
+    }
+
   }
 
   e.dataTransfer.dropEffect = 'move'; // hmm....
@@ -72,8 +95,8 @@ function makeGhost(el) {
   ghostEl = document.createElement("DIV");
   ghostEl.className = "draggr-ghost";
 
-  // parent.insertBefore(newItem, el);
   el.parentNode.insertBefore(ghostEl, el.nextSibling);
+
 }
 
 
