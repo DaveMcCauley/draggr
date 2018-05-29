@@ -9,9 +9,11 @@ var moveEl;
 var ghostEl;
 var dragOffsetX;
 var dropItem;
+var dropChild;
 
 
 function dragStart(e) { // el.target is the source node!
+  dropChild = false;
   moveEl = e.target;
   e.target.style.opacity = '0.4';
   this.style.border = "1px solid #f0f";
@@ -22,7 +24,8 @@ function dragStart(e) { // el.target is the source node!
   makeGhost(e.target);
 
   e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text', 'ungabunga'); // not used but need it make drag work in FF.
+  //e.dataTransfer.setData('text', 'ungabunga'); // not used but need it make drag work in FF.
+  e.dataTransfer.setData('text/html', this.innerHTML);
 }
 
 function dragOver(e) {
@@ -44,12 +47,14 @@ function dragOver(e) {
     if(e.offsetX > dragOffsetX + 50) {
       console.log("bumpus");
       ghostEl.style.marginLeft = "50px";
+      dropChild = true;
     }
     else if(e.offsetX > dragOffsetX) {
       return;
     }
     else {
       ghostEl.style.marginLeft = "";
+      dropChild = false;
     }
 
   }
@@ -88,17 +93,18 @@ function dragDrop(e) {
     return;
 
   if(e.target === ghostEl) {
-    console.log("dragDrop(e.offsetX): ", e.offsetX );
-    let item = e.target.previousSibling;
-    let left;
-    if(item) {
-      left = item.offsetLeft - item.style.borderLeft - item.style.paddingLeft;
-      console.log("draggr-item exists ", left);
+    console.log("dropping on ghostEl...")
+    let prevEl = e.target.previousSibling;
+    if(dropChild) {
+      console.log("dropping into child...");
     }
+    else {
+      console.log("move after prevsiousSibling...");
 
-    console.log("ghostEl.offsetLeft", ghostEl.offsetLeft);
-
+    }
   }
+
+  console.log("e.target...", e.target);
 
   // clean up
   // if(e.target.className === 'draggr-ghost')
