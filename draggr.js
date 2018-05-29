@@ -83,11 +83,27 @@ function dragDrop(e) {
   if(e.preventDefault) {
     e.preventDefault(); // Necessary. Prevents redirect of doom!
   }
+
   if(e.target == moveEl)
     return;
-  if(e.target.className === 'draggr-ghost')
-    console.log("dropped on teh ghost!");
-  return;
+
+  if(e.target === ghostEl) {
+    console.log("dragDrop(e.offsetX): ", e.offsetX );
+    let item = e.target.previousSibling;
+    let left;
+    if(item) {
+      left = item.offsetLeft - item.style.borderLeft - item.style.paddingLeft;
+      console.log("draggr-item exists ", left);
+    }
+
+    console.log("ghostEl.offsetLeft", ghostEl.offsetLeft);
+
+  }
+
+  // clean up
+  // if(e.target.className === 'draggr-ghost')
+  //   console.log("dropped on teh ghost!");
+  // return;
 }
 
 // creates a ghost object AFTER el in el's parent.
