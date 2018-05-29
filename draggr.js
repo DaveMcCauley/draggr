@@ -25,7 +25,7 @@ function dragStart(e) { // el.target is the source node!
 
   e.dataTransfer.effectAllowed = 'move';
   //e.dataTransfer.setData('text', 'ungabunga'); // not used but need it make drag work in FF.
-  e.dataTransfer.setData('text/html', this.innerHTML);
+  e.dataTransfer.setData('text/html', moveEl.innerHTML);
 }
 
 function dragOver(e) {
@@ -94,13 +94,20 @@ function dragDrop(e) {
 
   if(e.target === ghostEl) {
     console.log("dropping on ghostEl...")
-    let prevEl = e.target.previousSibling;
     if(dropChild) {
       console.log("dropping into child...");
+      let prevEl = ghostEl.previousSibling;
+      let childs = prevEl.querySelector(".draggr .children");
+      console.log("childs", childs);
+      if (childs) {
+        childs.appendChild(moveEl);
+      }
     }
     else {
       console.log("move after prevsiousSibling...");
-
+      if(ghostEl) {
+        ghostEl.parentNode.insertBefore(moveEl, ghostEl);
+      }
     }
   }
 
