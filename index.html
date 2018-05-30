@@ -31,6 +31,13 @@
   </div>
 
   <script src="draggr.js"></script>
-
+  <script>
+    var draggers = document.querySelectorAll('.draggr');
+    var draggrs = [];
+    [].forEach.call(draggers, function(item) {
+      var myDraggr = new Draggr(item);
+      draggrs.push(myDraggr);
+    });
+  </script>
 </body>
 </html>
