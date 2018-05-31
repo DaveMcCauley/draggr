@@ -105,14 +105,17 @@ console.log("FOUND draggr.js");
       // the on drag over event... find the nearest draggr-item and
       // move the ghostEl under it.
       // TODO: could I use bubbling instead and test for className?
-      let item = e.target.closest('.draggr-item');
-      if(item && (e.target.parentNode === item.parentNode)) {
-        item.parentNode.insertBefore(ghostEl, item.nextSibling);
+      let prevEl = e.target.closest('.draggr-item');
+      if(prevEl && (e.target.parentNode === prevEl.parentNode)) {
+        prevEl.parentNode.insertBefore(ghostEl, prevEl.nextSibling);
+        //prevEl.parentNode.insertBefore(ghostEl, prevEl.parentNode.children[0] !== prevEl && prevEl.nextSibling  || prevEl);
       }
+
+      // try it with half/half
 
       // above let's us switch parents with no restriction. But...
       // if we switched parents,
-      if(item && (item.parentNode !== parentEl)) {
+      if(prevEl && (prevEl.parentNode !== parentEl)) {
         // don't need this, we only have ONE (closure scope) ghost now.
         // if(this.theParent) {
         //   [].forEach.call(this.theParent.children, function(item) {
@@ -125,7 +128,8 @@ console.log("FOUND draggr.js");
         // update the container style. TODO: use class?
         parentEl.style.border = "";
         // update the current parent. (may need this later)
-        parentEl = item.parentNode;
+        parentEl = prevEl.parentNode;
+        parentEl.style.border = "1px solid #f0f";
       }
 
       // bump if we are on the ghost element and X > 50px offset from the side
@@ -182,7 +186,7 @@ console.log("FOUND draggr.js");
       //     parentEl.removeChild(item);
       //   }
       // });
-      if(ghostEl) {
+      if(ghostEl && ghostEl.parentElement) {
         ghostEl.parentElement.removeChild(ghostEl);
         //ghostEl = null;
       }
@@ -201,10 +205,12 @@ console.log("FOUND draggr.js");
       if(e.target === ghostEl) {
         if(dropChild) {
           let prevEl = ghostEl.previousSibling;
-          let childs = prevEl.querySelector(".draggr .children");
-          if (childs) {
-            // TODO: don't add if childs already contains the moveEl
-            childs.appendChild(moveEl);
+          if(!(prevEl === moveEl)) { // can't make it a child of itself!
+            let childs = prevEl.querySelector(".draggr .children");
+            if (childs) {
+              // TODO: don't add if childs already contains the moveEl
+              childs.appendChild(moveEl);
+            }
           }
         }
         else {
