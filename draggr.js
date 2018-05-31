@@ -75,9 +75,9 @@ console.log("FOUND draggr.js");
     dragStart: function(e) { // el.target is the source node!
       dropChild = false;
       moveEl = e.target;
-      this.style.border = "1px solid #f0f";
-
       rootEl = parentEl = e.target.parentElement;
+      // TODO: Remove
+      rootEl.style.border = "1px solid #f0f";
 
       dragOffsetX = e.target.offsetLeft;
 
@@ -148,15 +148,20 @@ console.log("FOUND draggr.js");
     },
 
     dragLeave: function(e) {
+
+      // TODO: do we need this indicator?
       if(e.target.parentNode.className === 'draggr') {
         e.target.style.border = "";
       }
 
+      // if we're leaving a draggr parent, we no longer
+      // need to show the ghost, because dropping it
+      // will not result in an insertion
+      // TODO: This doesn't work all that well. I can easly move
+      // the drag fast and it doesn't fire the event fast enough.
       if(e.target.className === 'draggr') {
         console.log("Leaving draggr...");
-        //let parentEl = e.target.parentElement;
-        // if(parenetEl.className) test for draggr?
-        // TODO: Function this...
+        // TODO: FUNCTION
         [].forEach.call(e.target.children, function(item) {
           if(item.className === 'draggr-ghost') {
             e.target.removeChild(item);
@@ -169,21 +174,15 @@ console.log("FOUND draggr.js");
     dragEnd: function(e) {
 
       this.style.border = "";
-      this.moveEl.style.opacity = "";
+      moveEl.style.opacity = "";
 
-      let parentEl = e.target.parentElement;
-      // if(parenetEl.className) test for draggr?
+      // remove the ghosts from the parent, we dont' need it anymore.
       // TODO: Function this...
       [].forEach.call(parentEl.children, function(item) {
         if(item.className === 'draggr-ghost') {
           parentEl.removeChild(item);
         }
       });
-
-      // does dragEnd bubble up?
-      console.log("dragEnd.e.target.className", e.target.className);
-
-
 
     },
 
