@@ -113,7 +113,6 @@ console.log("FOUND draggr.js");
       // above let's us switch parents with no restriction. But...
       // if we switched parents,
       if(item && (item.parentNode !== parentEl)) {
-        console.log("change parents!");
         // don't need this, we only have ONE (closure scope) ghost now.
         // if(this.theParent) {
         //   [].forEach.call(this.theParent.children, function(item) {
@@ -162,19 +161,11 @@ console.log("FOUND draggr.js");
       // will not result in an insertion
       // TODO: This doesn't work all that well. I can easly move
       // the drag fast and it doesn't fire the event fast enough.
-      if(e.target.className === 'draggr') {
-        console.log("Leaving draggr...");
-        // TODO: FUNCTION
-        [].forEach.call(e.target.children, function(item) {
-          if(item.className === 'draggr-ghost') {
-            e.target.removeChild(item);
-          }
-        });
-        // TODO: Needs a dragEnter. For now if we null this
-        // coming back to the drag resets offsetX and a bunch
-        // of other stuff. If we null it, there's no code to
-        // reinsert it (as it's inserted on dragStart);
-        //ghostEl = null;
+      if(e.target.className === 'draggr' && ghostEl && ghostEl.parentElement) {
+        ghostEl.parentElement.removeChild(ghostEl);
+        // ghostEl.null;
+
+
       }
 
     },
@@ -192,13 +183,13 @@ console.log("FOUND draggr.js");
       //   }
       // });
       if(ghostEl) {
-      ghostEl.parentElement.removeChild(ghostEl);
-      ghostEl = null;}
+        ghostEl.parentElement.removeChild(ghostEl);
+        //ghostEl = null;
+      }
 
     },
 
     dragDrop: function(e) {
-      console.log("dragDrop!");
 
       if(e.preventDefault) {
         e.preventDefault(); // Necessary. Prevents redirect of doom!
@@ -212,6 +203,7 @@ console.log("FOUND draggr.js");
           let prevEl = ghostEl.previousSibling;
           let childs = prevEl.querySelector(".draggr .children");
           if (childs) {
+            // TODO: don't add if childs already contains the moveEl
             childs.appendChild(moveEl);
           }
         }
