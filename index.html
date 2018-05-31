@@ -35,10 +35,7 @@
     var draggers = document.querySelectorAll('.draggr');
     var draggrs = [];
     [].forEach.call(draggers, function(item) {
-      var myDraggr = new Draggr(item);
-      myDraggr.bindEvents(item);
-      console.log("myDraggr.rootEl", myDraggr.rootEl);
-      draggrs.push(myDraggr);
+      Draggr.create(item);
     });
   </script>
 </body>
