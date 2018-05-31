@@ -97,67 +97,54 @@ console.log("FOUND draggr.js");
       if(e.preventDefault) {
         e.preventDefault(); // Necessary. Allows us to drop!
       }
-
-      closureUngabunga = 2;
-      console.log("closureUngabunga", closureUngabunga);
-
       e.dataTransfer.dropEffect = 'move'; // hmm....
+
+      // find the nearest (up) draggr-item, since innerHTML can fire
+      // the on drag over event... find the nearest draggr-item and
+      // move the ghostEl under it.
+      // TODO: could I use bubbling instead and test for className?
       let item = e.target.closest('.draggr-item');
       if(item && (e.target.parentNode === item.parentNode)) {
-        //   item.style.border = "2px dashed #00f";
-        item.parentNode.insertBefore(this.ghostEl, item.nextSibling);
-
+        item.parentNode.insertBefore(ghostEl, item.nextSibling);
       }
 
-      // if switched parents, clean up ghosts in the parent just left.
-      if(item && (item.parentNode !== this.theParent)) {
+      // above let's us switch parents with no restriction. But...
+      // if we switched parents,
+      if(item && (item.parentNode !== parentEl)) {
         console.log("change parents!");
-        if(this.theParent) {
-          [].forEach.call(this.theParent.children, function(item) {
-            if(item.className === 'draggr-ghost') {
-              this.theParent.removeChild(item);
-            }
-          })
-        }
-        this.theParent = item.parentNode;
+        // don't need this, we only have ONE (closure scope) ghost now.
+        // if(this.theParent) {
+        //   [].forEach.call(this.theParent.children, function(item) {
+        //     if(item.className === 'draggr-ghost') {
+        //       this.theParent.removeChild(item);
+        //     }
+        //   })
+        // }
+
+        // update the current parent. (may need this later)
+        parentEl = item.parentNode;
       }
 
 
       // bump if we are on the ghost element and X > 50px offset from the side
-      if(e.target === this.ghostEl) {
+      // we're going to be inserting the moveEl as a child of the preceding
+      // element when (if?) we drop it.
+      if(e.target === ghostEl) {
         // let prevEl = ghostEl.previousSibling;
         // let leftSide = prevEl.offsetLeft;
         if(e.offsetX > dragOffsetX + 50) {
-          this.ghostEl.style.marginLeft = "50px";
-          this.dropChild = true;
+          ghostEl.style.marginLeft = "50px";
+          dropChild = true;
         }
-        else if(e.offsetX > dragOffsetX) {
+        else if(e.offsetX > dragOffsetX) { //debounces the shift.
           return;
         }
         else {
-          this.ghostEl.style.marginLeft = "";
-          this.dropChild = false;
+          ghostEl.style.marginLeft = "";
+          dropChild = false;
         }
 
       }
-
-      ////////////////////////////////////////
-      // Resume notes....
-      // Somewhere in here need to clean out any ghosts when entering
-      // a new draggr class....
-
-      // ex. set a 'global' variable for parent.
-      // when target.parent != global, clean up the global ghosts.
-
-      // if (current parent != previous parent) set to new parent,
-      // possibly store the original parent (for move event callback).
-
-
-
-
-
-
-
     },
 
     dragLeave: function(e) {
