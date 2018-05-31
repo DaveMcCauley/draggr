@@ -193,20 +193,20 @@ console.log("FOUND draggr.js");
         e.preventDefault(); // Necessary. Prevents redirect of doom!
       }
 
-      if(e.target == this.moveEl)
-        return;
+      if(e.target === moveEl)
+        return; // TODO: consider adding as child? sibling?
 
-      if(e.target === this.ghostEl) {
-        if(this.dropChild) {
-          let prevEl = this.ghostEl.previousSibling;
+      if(e.target === ghostEl) {
+        if(dropChild) {
+          let prevEl = ghostEl.previousSibling;
           let childs = prevEl.querySelector(".draggr .children");
           if (childs) {
-            childs.appendChild(this.moveEl);
+            childs.appendChild(moveEl);
           }
         }
         else {
-          if(this.ghostEl) {
-            this.ghostEl.parentNode.insertBefore(this.moveEl, this.ghostEl);
+          if(ghostEl) {
+            ghostEl.parentNode.insertBefore(moveEl, ghostEl);
           }
         }
       }
