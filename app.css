@@ -4,6 +4,11 @@
   color: rgb(80, 80, 80);
 }
 
+.draggr {
+  padding: 4px;
+  margin: 4px;
+}
+
 .draggr-item p {
   margin: 0;
   width: 50%;

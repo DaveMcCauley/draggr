@@ -7,8 +7,10 @@ function Draggr(el, options) {
     throw 'Draggr: \'el\' must be an HTMLElement, and not ' + {}.toString.call(el);
   }
 
-  var rootEl = el;
-  // this.options = (lodash) extend ;
+  this.rootEl = el;
+  // this.options = (lodash) extend ;.
+
+  let ungabunga = 2;
 
   var defaults = {
     ghostClass: 'draggr-ghost',
@@ -21,18 +23,20 @@ function Draggr(el, options) {
 //   }
 
     // WRAP LATER
-  var moveEl;
-  var ghostEl;
-  var dragOffsetX;
-  var dropItem;
-  var dropChild;
+  this.moveEl = {};
+  this.ghostEl = {};
+  this.dragOffsetX = {};
+  this.dropItem = {};
+  this.dropChild = {};
+  this.startParent = {};
+  this.theParent = {};
 
   // bind the events to el
-  el.addEventListener('dragstart', this.dragStart, false);
-  el.addEventListener('dragover', this.dragOver, false);
-  el.addEventListener('dragleave', this.dragLeave, false);
-  el.addEventListener('dragend', this.dragEnd, false);
-  el.addEventListener('drop', this.dragDrop, false);
+  // el.addEventListener('dragstart', this.dragStart, false);
+  // el.addEventListener('dragover', this.dragOver, false);
+  // el.addEventListener('dragleave', this.dragLeave, false);
+  // el.addEventListener('dragend', this.dragEnd, false);
+  // el.addEventListener('drop', this.dragDrop, false);
 
 }
 
@@ -47,55 +51,99 @@ Draggr.prototype = {
   // var dropItem;
   // var dropChild;
 
+  bindEvents: function(el) {
+    this.rootEl = el;
+    this.rootEl.addEventListener('dragstart', this.dragStart, false);
+    this.rootEl.addEventListener('dragover', this.dragOver, false);
+    this.rootEl.addEventListener('dragleave', this.dragLeave, false);
+    this.rootEl.addEventListener('dragend', this.dragEnd, false);
+    this.rootEl.addEventListener('drop', this.dragDrop, false);
+  },
+
   dragStart: function(e) { // el.target is the source node!
-    dropChild = false;
-    moveEl = e.target;
+    this.dropChild = false;
+    this.moveEl = e.target;
     this.style.border = "1px solid #f0f";
 
+    this.theParent = this.starParent = e.target.parentElement;
+
     var offsetLeft = e.target.offsetLeft;
-    dragOffsetX = e.offsetX;
+    dragOffsetX = e.offsetX;   //////////////////////
 
     //makeGhost(e.target);
-    ghostEl = document.createElement("DIV");
-    ghostEl.className = "draggr-ghost";
-    rootEl.parentNode.insertBefore(ghostEl, rootEl.nextSibling);
+    this.ghostEl = document.createElement("DIV");
+    this.ghostEl.className = "draggr-ghost";
+    //this.rootEl.parentNode.insertBefore(this.ghostEl, this.rootEl.nextSibling);
 ////////////
 
     e.dataTransfer.effectAllowed = 'move';
     //e.dataTransfer.setData('text', 'ungabunga'); // not used but need it make drag work in FF.
-    e.dataTransfer.setData('text/html', moveEl.innerHTML);
+    e.dataTransfer.setData('text/html', this.moveEl.innerHTML);
   },
+
+
 
   dragOver: function(e) {
     if(e.preventDefault) {
       e.preventDefault(); // Necessary. Allows us to drop!
     }
 
+    e.dataTransfer.dropEffect = 'move'; // hmm....
     let item = e.target.closest('.draggr-item');
-    if(item) {
-      item.style.border = "2px dashed #00f";
-      item.parentNode.insertBefore(ghostEl, item.nextSibling);
+    if(item && (e.target.parentNode === item.parentNode)) {
+      //   item.style.border = "2px dashed #00f";
+      item.parentNode.insertBefore(this.ghostEl, item.nextSibling);
+
     }
 
+    // if switched parents, clean up ghosts in the parent just left.
+    if(item && (item.parentNode !== this.theParent)) {
+      console.log("change parents!");
+      if(this.theParent) {
+        [].forEach.call(this.theParent.children, function(item) {
+          if(item.className === 'draggr-ghost') {
+            this.theParent.removeChild(item);
+          }
+        })
+      }
+      this.theParent = item.parentNode;
+    }
+
+
     // bump if we are on the ghost element and X > 50px offset from the side
-    if(e.target === ghostEl) {
+    if(e.target === this.ghostEl) {
       // let prevEl = ghostEl.previousSibling;
       // let leftSide = prevEl.offsetLeft;
       if(e.offsetX > dragOffsetX + 50) {
-        ghostEl.style.marginLeft = "50px";
-        dropChild = true;
+        this.ghostEl.style.marginLeft = "50px";
+        this.dropChild = true;
       }
       else if(e.offsetX > dragOffsetX) {
         return;
       }
       else {
-        ghostEl.style.marginLeft = "";
-        dropChild = false;
+        this.ghostEl.style.marginLeft = "";
+        this.dropChild = false;
       }
 
     }
 
-    e.dataTransfer.dropEffect = 'move'; // hmm....
+    ////////////////////////////////////////
+    // Resume notes....
+    // Somewhere in here need to clean out any ghosts when entering
+    // a new draggr class....
+
+    // ex. set a 'global' variable for parent.
+    // when target.parent != global, clean up the global ghosts.
+
+    // if (current parent != previous parent) set to new parent,
+    // possibly store the original parent (for move event callback).
+
+
+
+
+
+
 
   },
 
@@ -103,18 +151,40 @@ Draggr.prototype = {
     if(e.target.parentNode.className === 'draggr') {
       e.target.style.border = "";
     }
+
+    if(e.target.className === 'draggr') {
+      console.log("Leaving draggr...");
+      //let parentEl = e.target.parentElement;
+      // if(parenetEl.className) test for draggr?
+      // TODO: Function this...
+      [].forEach.call(e.target.children, function(item) {
+        if(item.className === 'draggr-ghost') {
+          e.target.removeChild(item);
+        }
+      });
+    }
+
   },
 
   dragEnd: function(e) {
+
     this.style.border = "";
-    moveEl.style.opacity = "";
+    this.moveEl.style.opacity = "";
+
+    let parentEl = e.target.parentElement;
+    // if(parenetEl.className) test for draggr?
     // TODO: Function this...
-    [].forEach.call(this.children, function(item) {
+    [].forEach.call(parentEl.children, function(item) {
       if(item.className === 'draggr-ghost') {
-        let parent = item.parentElement;
-        parent.removeChild(item);
+        parentEl.removeChild(item);
       }
     });
+
+    // does dragEnd bubble up?
+    console.log("dragEnd.e.target.className", e.target.className);
+
+
+
   },
 
   dragDrop: function(e) {
@@ -124,20 +194,20 @@ Draggr.prototype = {
       e.preventDefault(); // Necessary. Prevents redirect of doom!
     }
 
-    if(e.target == moveEl)
+    if(e.target == this.moveEl)
       return;
 
-    if(e.target === ghostEl) {
-      if(dropChild) {
-        let prevEl = ghostEl.previousSibling;
+    if(e.target === this.ghostEl) {
+      if(this.dropChild) {
+        let prevEl = this.ghostEl.previousSibling;
         let childs = prevEl.querySelector(".draggr .children");
         if (childs) {
-          childs.appendChild(moveEl);
+          childs.appendChild(this.moveEl);
         }
       }
       else {
-        if(ghostEl) {
-          ghostEl.parentNode.insertBefore(moveEl, ghostEl);
+        if(this.ghostEl) {
+          this.ghostEl.parentNode.insertBefore(this.moveEl, this.ghostEl);
         }
       }
     }
@@ -146,15 +216,22 @@ Draggr.prototype = {
 
   // creates a ghost object AFTER el in el's parent.
   makeGhost: function(el) {
-    ghostEl = document.createElement("DIV");
-    ghostEl.className = "draggr-ghost";
-
-    el.parentNode.insertBefore(ghostEl, el.nextSibling);
+    this.ghostEl = document.createElement("DIV");
+    this.ghostEl.className = "draggr-ghost";
+    el.parentNode.insertBefore(this.ghostEl, el.nextSibling);
 
   },
 
   removeGhost: function(el) {
     el.parentNode.removeChild(el);
+  },
+
+  removeChildrenByClass: function(el, classname) {// TODO: Function this...
+    [].forEach.call(el.children, function(item) {
+      if(item.className === classname) {
+        el.removeChild(item);
+      }
+    });
   }
 
 
