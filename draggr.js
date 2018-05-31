@@ -79,12 +79,14 @@ console.log("FOUND draggr.js");
       // TODO: Remove
       rootEl.style.border = "1px solid #f0f";
 
-      dragOffsetX = e.target.offsetLeft;
+      dragOffsetX = e.offsetX;
 
       //makeGhost(e.target);
-      ghostEl = document.createElement("DIV");
-      ghostEl.className = "draggr-ghost";
-      rootEl.insertBefore(ghostEl, moveEl.nextElementSibling);
+      if(!ghostEl) {
+        ghostEl = document.createElement("DIV");
+        ghostEl.className = "draggr-ghost";
+        rootEl.insertBefore(ghostEl, moveEl.nextElementSibling);
+      }
 
       e.dataTransfer.effectAllowed = 'move';
       //e.dataTransfer.setData('text', 'ungabunga'); // not used but need it make drag work in FF.
@@ -121,10 +123,11 @@ console.log("FOUND draggr.js");
         //   })
         // }
 
+        // update the container style. TODO: use class?
+        parentEl.style.border = "";
         // update the current parent. (may need this later)
         parentEl = item.parentNode;
       }
-
 
       // bump if we are on the ghost element and X > 50px offset from the side
       // we're going to be inserting the moveEl as a child of the preceding
@@ -167,6 +170,11 @@ console.log("FOUND draggr.js");
             e.target.removeChild(item);
           }
         });
+        // TODO: Needs a dragEnter. For now if we null this
+        // coming back to the drag resets offsetX and a bunch
+        // of other stuff. If we null it, there's no code to
+        // reinsert it (as it's inserted on dragStart);
+        //ghostEl = null;
       }
 
     },
@@ -178,11 +186,14 @@ console.log("FOUND draggr.js");
 
       // remove the ghosts from the parent, we dont' need it anymore.
       // TODO: Function this...
-      [].forEach.call(parentEl.children, function(item) {
-        if(item.className === 'draggr-ghost') {
-          parentEl.removeChild(item);
-        }
-      });
+      // [].forEach.call(parentEl.children, function(item) {
+      //   if(item.className === 'draggr-ghost') {
+      //     parentEl.removeChild(item);
+      //   }
+      // });
+      if(ghostEl) {
+      ghostEl.parentElement.removeChild(ghostEl);
+      ghostEl = null;}
 
     },
 
