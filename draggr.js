@@ -96,9 +96,12 @@ console.log("FOUND draggr.js");
 
 
     dragOver: function(e) {
+
+      e.stopPropagation();
       if(e.preventDefault) {
         e.preventDefault(); // Necessary. Allows us to drop!
       }
+
       e.dataTransfer.dropEffect = 'move'; // hmm....
 
       // find the nearest (up) draggr-item, since innerHTML can fire
@@ -106,12 +109,26 @@ console.log("FOUND draggr.js");
       // move the ghostEl under it.
       // TODO: could I use bubbling instead and test for className?
       let prevEl = e.target.closest('.draggr-item');
-      if(prevEl && (e.target.parentNode === prevEl.parentNode)) {
-        prevEl.parentNode.insertBefore(ghostEl, prevEl.nextSibling);
+      // if(prevEl && (e.target.parentNode === prevEl.parentNode)) {
+      //   prevEl.parentNode.insertBefore(ghostEl, prevEl.nextSibling);
         //prevEl.parentNode.insertBefore(ghostEl, prevEl.parentNode.children[0] !== prevEl && prevEl.nextSibling  || prevEl);
-      }
+      // }
 
       // try it with half/half
+      console.log("prevEl:", prevEl);
+      if(prevEl) {
+        console.log("prevEl.parentNode:", prevEl.parentNode || null);
+      }
+
+      if(prevEl) {
+        console.log("move the ghost!!");
+        var rect = prevEl.getBoundingClientRect();
+        var next = (e.clientY - rect.top)/(rect.bottom - rect.top) > .5;
+        console.log("next: ", next);
+        prevEl.parentNode.insertBefore(ghostEl, next && prevEl.nextSibling || prevEl);
+      }
+
+
 
       // above let's us switch parents with no restriction. But...
       // if we switched parents,
