@@ -1,0 +1,40 @@
+
+* {
+  box-sizing: border-box;
+  color: rgb(80, 80, 80);
+}
+
+.draggr {
+  padding: 4px;
+  margin: 4px;
+}
+
+.draggr-item p {
+  margin: 0;
+  width: 50%;
+}
+
+.draggr-wrapper {
+  max-width: 550px;
+}
+
+.draggr-item {
+  min-height: 50px;
+  border: 1px solid rgb(150, 150, 150);
+  background: rgb(200, 200, 200);
+  cursor: move;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+/* https://stackoverflow.com/questions/10867506/dragleave-of-parent-element-fires-when-dragging-over-children-elements/16721792?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa */
+/*.draggr-item * {
+  pointer-events: none;
+}*/
+
+.draggr-ghost {
+  color: rgb(102, 138, 255);
+  height: 50px;
+  border: 1px solid rgb(128, 159, 255);
+  background: rgba(230, 236, 255, .8);
+}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=0.5"/>
+  <link href="app.css" rel="stylesheet" type="text/css"/>
+</head>
+
+<body>
+  <h1>Draggr. A bespoke drag-and-drop utility for handling data with children</h1>
+  <h2>A draggable class</h2>
+
+  <div class="draggr-wrapper">
+
+    <div class="draggr">
+      <div class="draggr-item" draggable="true"><p>Drag Me! n=0</p>
+        <div class="draggr children"> </div>
+      </div>
+      <div class="draggr-item" draggable="true"><p>Or Drag Me! n=1</p>
+        <div class="draggr children"></div>
+      </div>
+      <div class="draggr-item" draggable="true"><p>Or Drag Me! n=2</p>
+        <div class="draggr children"></div>
+      </div>
+      <div class="draggr-item" draggable="true"><p>Or Drag Me! n=3</p>
+        <div class="draggr children"></div>
+      </div>
+    </div>
+
+  </div>
+
+    <div class="draggr-wrapper">
+
+    <div class="draggr">
+      <div class="draggr-item" draggable="true"><p>Drag Me! n=0</p>
+        <div class="draggr children"> </div>
+      </div>
+      <div class="draggr-item" draggable="true"><p>Or Drag Me! n=1</p>
+        <div class="draggr children"></div>
+      </div>
+      <div class="draggr-item" draggable="true"><p>Or Drag Me! n=2</p>
+        <div class="draggr children">
+          <div class="draggr-item" draggable="true"><p>Drag Me Level 2! n=0</p>
+            <div class="draggr children"> </div>
+          </div>
+          <div class="draggr-item" draggable="true"><p>Drag Me! n=0</p>
+            <div class="draggr children"> </div>
+          </div>
+        </div>
+      </div>
+      <div class="draggr-item" draggable="true"><p>Or Drag Me! n=3</p>
+        <div class="draggr children"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="draggr.js"></script>
+  <script>
+    var draggers = document.querySelectorAll('.draggr');
+    var draggrs = [];
+    [].forEach.call(draggers, function(item) {
+      Draggr.create(item);
+    });
+  </script>
+</body>
+</html>
