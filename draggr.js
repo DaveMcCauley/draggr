@@ -34,7 +34,10 @@ console.log("FOUND draggr.js");
     dropItem, // TODO: Used?
     dropChild,
     oldIndex, // TOOD:
+    tapStart,
+    touchTarget,
     newIndex;  // TODO:
+
 
   // closureUngabunga = 2;
   // somethingElse = "Unicorn";
@@ -70,6 +73,10 @@ console.log("FOUND draggr.js");
       el.addEventListener('dragleave', this.dragLeave, false);
       el.addEventListener('dragend', this.dragEnd, false);
       el.addEventListener('drop', this.dragDrop, false);
+
+      el.addEventListener('touchstart', this.touchStart, true);
+      el.addEventListener('touchmove', this.touchMove, true);
+
     },
 
     dragStart: function(e) {
@@ -210,7 +217,6 @@ console.log("FOUND draggr.js");
       this.ghostEl = document.createElement("DIV");
       this.ghostEl.className = "draggr-ghost";
       el.parentNode.insertBefore(this.ghostEl, el.nextSibling);
-
     },
 
     removeGhost: function(el) {
@@ -223,6 +229,28 @@ console.log("FOUND draggr.js");
           el.removeChild(item);
         }
       });
+    },
+
+
+    touchStart: function(evt) {
+      evt.preventDefault();
+      console.log("touchStart:", evt);
+      evt.target.style.border = "1px solid #f0f";
+      // TODO: should probably do some validaion for >1 touches?
+      tapStart = evt.touches[0];
+    },
+
+
+    touchMove: function(evt) {
+      let target = document.elementFromPoint(evt.touches[0].clientX, evt.touches[0].clientY);
+      //console.log("target", target);
+      if(target.className === 'draggr-item') {
+        if(touchTarget !== target) {
+          if(touchTarget) {touchTarget.style.border = "";}
+          target.style.border = "3px solid #0f0";
+          touchTarget = target;
+        }
+      }
     }
 
   }
@@ -237,3 +265,11 @@ console.log("FOUND draggr.js");
   return Draggr;
 
 }); // draggrFactory
+
+
+// var clickEvent = (function() {
+//   if ('ontouchstart' in document.documentElement === true)
+//     return 'touchstart';
+//   else
+//     return 'click';
+// })();

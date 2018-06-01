@@ -5,13 +5,14 @@
 }
 
 .draggr {
-  padding: 4px;
-  margin: 4px;
+  /* padding: 4px; */
+  /* margin: 4px; */
 }
 
 .draggr-item p {
   margin: 0;
   width: 50%;
+  pointer-events: none;
 }
 
 .draggr-wrapper {
