@@ -72,16 +72,15 @@ console.log("FOUND draggr.js");
       el.addEventListener('drop', this.dragDrop, false);
     },
 
-    dragStart: function(e) { // el.target is the source node!
+    dragStart: function(e) {
       dropChild = false;
+      // TODO: Only pickup e.target if it's a draggr-item
       moveEl = e.target;
       rootEl = parentEl = e.target.parentElement;
       // TODO: Remove
       rootEl.style.border = "1px solid #f0f";
-
       dragOffsetX = e.offsetX;
 
-      //makeGhost(e.target);
       if(!ghostEl) {
         ghostEl = document.createElement("DIV");
         ghostEl.className = "draggr-ghost";
@@ -89,7 +88,6 @@ console.log("FOUND draggr.js");
       }
 
       e.dataTransfer.effectAllowed = 'move';
-      //e.dataTransfer.setData('text', 'ungabunga'); // not used but need it make drag work in FF.
       e.dataTransfer.setData('text/html', moveEl.innerHTML);
     },
 
@@ -97,11 +95,10 @@ console.log("FOUND draggr.js");
 
     dragOver: function(e) {
 
-      e.stopPropagation();
+      //e.stopPropagation();
       if(e.preventDefault) {
         e.preventDefault(); // Necessary. Allows us to drop!
       }
-
       e.dataTransfer.dropEffect = 'move'; // hmm....
 
       // find the nearest (up) draggr-item, since innerHTML can fire
@@ -109,42 +106,20 @@ console.log("FOUND draggr.js");
       // move the ghostEl under it.
       // TODO: could I use bubbling instead and test for className?
       let prevEl = e.target.closest('.draggr-item');
-      // if(prevEl && (e.target.parentNode === prevEl.parentNode)) {
-      //   prevEl.parentNode.insertBefore(ghostEl, prevEl.nextSibling);
-        //prevEl.parentNode.insertBefore(ghostEl, prevEl.parentNode.children[0] !== prevEl && prevEl.nextSibling  || prevEl);
-      // }
-
-      // try it with half/half
-      console.log("prevEl:", prevEl);
-      if(prevEl) {
-        console.log("prevEl.parentNode:", prevEl.parentNode || null);
-      }
-
-      if(prevEl) {
-        console.log("move the ghost!!");
+      // they have to share the same parent, otherwise they could be parent/child
+      if(prevEl && (e.target.parentNode === prevEl.parentNode)) {
         var rect = prevEl.getBoundingClientRect();
+        // try it with half/half
         var next = (e.clientY - rect.top)/(rect.bottom - rect.top) > .5;
-        console.log("next: ", next);
-        prevEl.parentNode.insertBefore(ghostEl, next && prevEl.nextSibling || prevEl);
+        prevEl.parentNode.insertBefore(ghostEl, next && prevEl.nextSibling || !next && prevEl || null);
       }
 
-
-
-      // above let's us switch parents with no restriction. But...
-      // if we switched parents,
+      // let's us switch parents with no restriction. But...
+      // if we switched parents, update the parentEl property.
       if(prevEl && (prevEl.parentNode !== parentEl)) {
-        // don't need this, we only have ONE (closure scope) ghost now.
-        // if(this.theParent) {
-        //   [].forEach.call(this.theParent.children, function(item) {
-        //     if(item.className === 'draggr-ghost') {
-        //       this.theParent.removeChild(item);
-        //     }
-        //   })
-        // }
-
         // update the container style. TODO: use class?
         parentEl.style.border = "";
-        // update the current parent. (may need this later)
+        // update the current parent property. (may need this later)
         parentEl = prevEl.parentNode;
         parentEl.style.border = "1px solid #f0f";
       }
@@ -153,21 +128,20 @@ console.log("FOUND draggr.js");
       // we're going to be inserting the moveEl as a child of the preceding
       // element when (if?) we drop it.
       if(e.target === ghostEl) {
-        // let prevEl = ghostEl.previousSibling;
-        // let leftSide = prevEl.offsetLeft;
-        if(e.offsetX > dragOffsetX + 50) {
+        // don't add child if at the top of the list!
+        if((e.offsetX > dragOffsetX + 50) && ghostEl.previousElementSibling) {
           ghostEl.style.marginLeft = "50px";
           dropChild = true;
         }
-        else if(e.offsetX > dragOffsetX) { //debounces the shift.
+        else if((e.offsetX > dragOffsetX) && ghostEl.previousElementSibling) { //debounces the shift.
           return;
         }
         else {
           ghostEl.style.marginLeft = "";
           dropChild = false;
         }
-
       }
+
     },
 
     dragLeave: function(e) {
@@ -184,9 +158,6 @@ console.log("FOUND draggr.js");
       // the drag fast and it doesn't fire the event fast enough.
       if(e.target.className === 'draggr' && ghostEl && ghostEl.parentElement) {
         ghostEl.parentElement.removeChild(ghostEl);
-        // ghostEl.null;
-
-
       }
 
     },
@@ -197,12 +168,6 @@ console.log("FOUND draggr.js");
       moveEl.style.opacity = "";
 
       // remove the ghosts from the parent, we dont' need it anymore.
-      // TODO: Function this...
-      // [].forEach.call(parentEl.children, function(item) {
-      //   if(item.className === 'draggr-ghost') {
-      //     parentEl.removeChild(item);
-      //   }
-      // });
       if(ghostEl && ghostEl.parentElement) {
         ghostEl.parentElement.removeChild(ghostEl);
         //ghostEl = null;
@@ -222,7 +187,8 @@ console.log("FOUND draggr.js");
       if(e.target === ghostEl) {
         if(dropChild) {
           let prevEl = ghostEl.previousSibling;
-          if(!(prevEl === moveEl)) { // can't make it a child of itself!
+          // can't make it a child of itself and it needs a predecessor!
+          if(!(prevEl === moveEl) && (prevEl.className === 'draggr-item')) {
             let childs = prevEl.querySelector(".draggr .children");
             if (childs) {
               // TODO: don't add if childs already contains the moveEl
@@ -259,19 +225,6 @@ console.log("FOUND draggr.js");
       });
     }
 
-
-  // find all of the draggr lists. Note, we're calling this on the parent
-  // not the individual items (yet?!)
-  /*
-  var draggers = document.querySelectorAll('.draggr');
-  [].forEach.call(draggers, function(item) {
-    item.addEventListener('dragstart', dragStart, false);
-    item.addEventListener('dragover', dragOver, false);
-    item.addEventListener('dragleave', dragLeave, false);
-    item.addEventListener('dragend', dragEnd, false);
-    item.addEventListener('drop', dragDrop, false);
-  })
-  */
   }
 
 
