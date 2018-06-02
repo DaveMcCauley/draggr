@@ -60,12 +60,12 @@ console.log("FOUND draggr.js");
 
     // Bind all private methods
     // for (var fn in this) {
-    //   if (fn.charAt(0) === '_' && typeof this[fn] === 'function') {
+    //   if (fn.charAt(0) === 'u' && typeof this[fn] === 'function') {
     //     this[fn] = this[fn].bind(this);
     //   }
     // }
-    // https://stackoverflow.com/questions/32556299/call-javascript-prototype-method-from-another
-    this['ungabugna'] = this['ungabugna'].bind(this);
+    this.touchMove = this.touchMove.bind(this);
+    this.moveGhost = this.moveGhost.bind(this);
 
     // bind the events to el
     this.bindEvents(el);
@@ -85,6 +85,7 @@ console.log("FOUND draggr.js");
 
       el.addEventListener('touchstart', this.touchStart, true);
       el.addEventListener('touchmove', this.touchMove, true);
+      el.addEventListener('touchend', this.touchEnd, true);
 
     },
 
@@ -116,11 +117,12 @@ console.log("FOUND draggr.js");
         e.preventDefault(); // Necessary. Allows us to drop!
       }
       e.dataTransfer.dropEffect = 'move'; // hmm....
-
+////////////////////////
       // find the nearest (up) draggr-item, since innerHTML can fire
       // the on drag over event... find the nearest draggr-item and
       // move the ghostEl under it.
       // TODO: could I use bubbling instead and test for className?
+
       let prevEl = e.target.closest('.draggr-item');
       // they have to share the same parent, otherwise they could be parent/child
       if(prevEl && (e.target.parentNode === prevEl.parentNode)) {
@@ -157,7 +159,7 @@ console.log("FOUND draggr.js");
           dropChild = false;
         }
       }
-
+//////////////
     },
 
     dragLeave: function(e) {
@@ -244,28 +246,131 @@ console.log("FOUND draggr.js");
     touchStart: function(evt) {
       evt.preventDefault();
       console.log("touchStart:", evt);
-      evt.target.style.border = "1px solid #f0f";
+      evt.target.style.border = "1px solid #333";
       // TODO: should probably do some validaion for >1 touches?
       tapStart = evt.touches[0];
+
+////////////
+      dropChild = false;
+      // TODO: Only pickup e.target if it's a draggr-item
+      moveEl = evt.target;
+      rootEl = parentEl = evt.target.parentElement;
+      // TODO: Remove
+      rootEl.style.border = "1px solid #f0f";
+      ///>>>>  dragOffsetX = e.offsetX;
+
+      if(!ghostEl) {
+        ghostEl = document.createElement("DIV");
+        ghostEl.className = "draggr-ghost";
+        rootEl.insertBefore(ghostEl, moveEl.nextElementSibling);
+      }
+
     },
 
 
     touchMove: function(evt) {
+
       let target = document.elementFromPoint(evt.touches[0].clientX, evt.touches[0].clientY);
       //console.log("target", target);
-      if(target.className === 'draggr-item') {
+      if(target && target.className === 'draggr-item') {
         if(touchTarget !== target) {
           if(touchTarget) {touchTarget.style.border = "";}
           target.style.border = "3px solid #0f0";
           touchTarget = target;
         }
       }
-      ungabugna();
+      this.moveGhost(target, evt.touches[0].clientX, evt.touches[0].clientY);
     },
 
 
-    ungabugna: function () {
+    moveGhost: function (target, clientX, clientY) {
+      if(!target) return;
       console.log("I'm the great ungabugna!");
+            // find the nearest (up) draggr-item, since innerHTML can fire
+      // the on drag over event... find the nearest draggr-item and
+      // move the ghostEl under it.
+      // TODO: could I use bubbling instead and test for className?
+
+      let prevEl = target.closest('.draggr-item');
+      // they have to share the same parent, otherwise they could be parent/child
+      if(prevEl && (target.parentNode === prevEl.parentNode)) {
+        var rect = prevEl.getBoundingClientRect();
+        // try it with half/half
+        var next = (clientY - rect.top)/(rect.bottom - rect.top) > .5;
+        prevEl.parentNode.insertBefore(ghostEl, next && prevEl.nextSibling || !next && prevEl || null);
+      }
+
+      // let's us switch parents with no restriction. But...
+      // if we switched parents, update the parentEl property.
+      if(prevEl && (prevEl.parentNode !== parentEl)) {
+        // update the container style. TODO: use class?
+        parentEl.style.border = "";
+        // update the current parent property. (may need this later)
+        parentEl = prevEl.parentNode;
+        parentEl.style.border = "1px solid #f0f";
+      }
+
+      // bump if we are on the ghost element and X > 50px offset from the side
+      // we're going to be inserting the moveEl as a child of the preceding
+      // element when (if?) we drop it.
+      if(target === ghostEl) {
+        // don't add child if at the top of the list!
+        if((clientX > tapStart.clientX + 50) && ghostEl.previousElementSibling) {
+          ghostEl.style.marginLeft = "50px";
+          dropChild = true;
+        }
+        else if((clientX > tapStart.clientX) && ghostEl.previousElementSibling) { //debounces the shift.
+          // TODO: this may be where my laggy problem lies...
+          return;
+        }
+        else {
+          ghostEl.style.marginLeft = "";
+          dropChild = false;
+        }
+      }
+    },
+
+
+    touchEnd: function(evt) {
+
+      if(evt.preventDefault) {
+        evt.preventDefault(); // Necessary. Prevents redirect of doom!
+      }
+      console.log("touchEnd:");
+      console.log("  evt.target:", evt.target);
+      let target = document.elementFromPoint(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
+      console.log("  touchEnd:", target);
+      if(target === moveEl)
+        return; // TODO: consider adding as child? sibling?
+
+      if(target === ghostEl) {
+        if(dropChild) {
+          let prevEl = ghostEl.previousSibling;
+          // can't make it a child of itself and it needs a predecessor!
+          if(!(prevEl === moveEl) && (prevEl.className === 'draggr-item')) {
+            let childs = prevEl.querySelector(".draggr .children");
+            if (childs) {
+              // TODO: don't add if childs already contains the moveEl
+              childs.appendChild(moveEl);
+            }
+          }
+        }
+        else {
+          if(ghostEl) {
+            ghostEl.parentNode.insertBefore(moveEl, ghostEl);
+          }
+        }
+      }
+
+      ///> clean up. See also dragEnd.
+      evt.target.style.border = "";
+      moveEl.style.opacity = "";
+
+      // remove the ghosts from the parent, we dont' need it anymore.
+      if(ghostEl && ghostEl.parentElement) {
+        ghostEl.parentElement.removeChild(ghostEl);
+      }
+
     }
 
   }
