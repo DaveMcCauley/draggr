@@ -58,6 +58,15 @@ console.log("FOUND draggr.js");
   //     !(name in options) && (options[name] = defaults[name]);
   //   }
 
+    // Bind all private methods
+    // for (var fn in this) {
+    //   if (fn.charAt(0) === '_' && typeof this[fn] === 'function') {
+    //     this[fn] = this[fn].bind(this);
+    //   }
+    // }
+    // https://stackoverflow.com/questions/32556299/call-javascript-prototype-method-from-another
+    this['ungabugna'] = this['ungabugna'].bind(this);
+
     // bind the events to el
     this.bindEvents(el);
 
@@ -251,6 +260,12 @@ console.log("FOUND draggr.js");
           touchTarget = target;
         }
       }
+      ungabugna();
+    },
+
+
+    ungabugna: function () {
+      console.log("I'm the great ungabugna!");
     }
 
   }
