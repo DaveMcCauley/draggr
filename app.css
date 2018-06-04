@@ -4,6 +4,7 @@
   color: rgb(80, 80, 80);
 }
 
+
 .draggr {
   /* padding: 4px; */
   /* margin: 4px; */
@@ -16,6 +17,7 @@
 }
 
 .draggr-wrapper {
+  margin: 16px;
   max-width: 550px;
 }
 

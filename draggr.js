@@ -36,7 +36,11 @@ console.log("FOUND draggr.js");
     oldIndex, // TOOD:
     tapStart,
     touchTarget,
-    newIndex;  // TODO:
+    newIndex, // TODO:
+    touchEvt,
+    loopId,
+    lastX,
+    lastY;
 
 
   // closureUngabunga = 2;
@@ -66,6 +70,9 @@ console.log("FOUND draggr.js");
     // }
     this.touchMove = this.touchMove.bind(this);
     this.moveGhost = this.moveGhost.bind(this);
+    this.touchStart = this.touchStart.bind(this);
+    this.emulateDrag = this.emulateDrag.bind(this);
+    this.onTouchDrag = this.onTouchDrag.bind(this);
 
     // bind the events to el
     this.bindEvents(el);
@@ -93,6 +100,7 @@ console.log("FOUND draggr.js");
       dropChild = false;
       // TODO: Only pickup e.target if it's a draggr-item
       moveEl = e.target;
+
       rootEl = parentEl = e.target.parentElement;
       // TODO: Remove
       rootEl.style.border = "1px solid #f0f";
@@ -246,6 +254,7 @@ console.log("FOUND draggr.js");
     touchStart: function(evt) {
       evt.preventDefault();
       console.log("touchStart:", evt);
+      rootEl = parentEl = evt.target.parentElement;
       evt.target.style.border = "1px solid #333";
       // TODO: should probably do some validaion for >1 touches?
       tapStart = evt.touches[0];
@@ -254,7 +263,26 @@ console.log("FOUND draggr.js");
       dropChild = false;
       // TODO: Only pickup e.target if it's a draggr-item
       moveEl = evt.target;
-      rootEl = parentEl = evt.target.parentElement;
+
+      if(!dragEl) {
+        let rect = moveEl.getBoundingClientRect()
+        dragEl = evt.target.cloneNode(true);
+        rootEl.appendChild(dragEl);
+        // TODO: Add classes
+        dragEl.style.top = rect.top + 'px';
+        dragEl.style.left = rect.left + 'px';
+        dragEl.style.width = rect.width + 'px';
+        dragEl.style.height = rect.height + 'px';
+        dragEl.style.opacity = '.9';
+        dragEl.style.position = 'fixed';
+        dragEl.style.pointerEvents = 'none';
+        dragEl.style.border = "3px solid orange";
+
+
+
+      }
+
+      //rootEl = parentEl = evt.target.parentElement;
       // TODO: Remove
       rootEl.style.border = "1px solid #f0f";
       ///>>>>  dragOffsetX = e.offsetX;
@@ -265,13 +293,27 @@ console.log("FOUND draggr.js");
         rootEl.insertBefore(ghostEl, moveEl.nextElementSibling);
       }
 
+      // emulate dragging under the fingertip.
+      loopId = setInterval(this.emulateDrag, 50);
+
     },
 
+    emulateDrag: function() {
+      console.log("emulateDrag:", touchEvt);
+      if(touchEvt) {
+        if(this.lastX === touchEvt.clientX && this.lastY === touchEvt.clientY) {
+          console.log("  nochange");
+          return;
+        }
+        dragEl.style.display = 'none';
+        var target = document.elementFromPoint(touchEvt.clientX, touchEvt.clientY);
+        this.onTouchDrag(target, touchEvt.clientX, touchEvt.clientY);
+        dragEl.style.display = '';
+      }
 
-    touchMove: function(evt) {
+    },
 
-      let target = document.elementFromPoint(evt.touches[0].clientX, evt.touches[0].clientY);
-      //console.log("target", target);
+    onTouchDrag: function(target, x, y) {
       if(target && target.className === 'draggr-item') {
         if(touchTarget !== target) {
           if(touchTarget) {touchTarget.style.border = "";}
@@ -279,13 +321,48 @@ console.log("FOUND draggr.js");
           touchTarget = target;
         }
       }
-      this.moveGhost(target, evt.touches[0].clientX, evt.touches[0].clientY);
+
+      // let dx = x - lastX;
+      // let dy = y - lastY;
+      // let dx = touchEvt.clientX - lastX;
+      // let dy = touchEvt.clientY - lastY;
+      let dx = x - tapStart.clientX;
+      let dy = y - tapStart.clientY;
+      console.log("  touchEvt (x,y)  ", touchEvt.clientX, ", ", touchEvt.clientY, ")");
+      console.log("  args (x,y)      ", x, ", ", y, ")");
+      console.log("  tapStart (x,y)  ", tapStart.clientX, ", ", tapStart.clientY, ")");
+      console.log("  dx,dy           ", dx, ", ", dy, ")");
+
+
+      dragEl.style.transform = "translate(" + dx + "px, " + dy + "px)";
+        //     _css(ghostEl, 'webkitTransform', translate3d);
+        // _css(ghostEl, 'mozTransform', translate3d);
+        // _css(ghostEl, 'msTransform', translate3d);
+        // _css(ghostEl, 'transform', translate3d);
+
+      lastX = touchEvt.clientX
+      lastY = touchEvt.clientY;
+
+      this.moveGhost(target, x, y);
+
+    },
+
+    touchMove: function(evt) {
+
+      //let target = document.elementFromPoint(evt.touches[0].clientX, evt.touches[0].clientY);
+      //console.log("target", target);
+
+
+      // for emulatedDrag
+      //console.log("touchMove:", evt.touches ? evt.touches[0] : evt);
+      touchEvt = evt.touches ? evt.touches[0] : evt;
+
     },
 
 
     moveGhost: function (target, clientX, clientY) {
       if(!target) return;
-      console.log("I'm the great ungabugna!");
+      //console.log("I'm the great ungabugna!");
             // find the nearest (up) draggr-item, since innerHTML can fire
       // the on drag over event... find the nearest draggr-item and
       // move the ghostEl under it.
@@ -336,8 +413,12 @@ console.log("FOUND draggr.js");
       if(evt.preventDefault) {
         evt.preventDefault(); // Necessary. Prevents redirect of doom!
       }
+
+      clearInterval(loopId); // stop teh dragEmulator
+
       console.log("touchEnd:");
       console.log("  evt.target:", evt.target);
+      dragEl.style.display = "none";
       let target = document.elementFromPoint(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
       console.log("  touchEnd:", target);
       if(target === moveEl)
@@ -364,12 +445,31 @@ console.log("FOUND draggr.js");
 
       ///> clean up. See also dragEnd.
       evt.target.style.border = "";
-      moveEl.style.opacity = "";
+      // moveEl.style.opacity = "";
+      // moveEl.style.transform = "";
+      // moveEl.style.display = "";
+
+      // remove teh dragEl from teh parent, we dn't need it anymore.
+      if(dragEl && dragEl.parentElement) {
+        dragEl.parentElement.removeChild(dragEl);
+        dragEl = null;
+      }
 
       // remove the ghosts from the parent, we dont' need it anymore.
       if(ghostEl && ghostEl.parentElement) {
         ghostEl.parentElement.removeChild(ghostEl);
+        ghostEl = null;
       }
+
+      // RESET Everything
+      // TODO: crush into a fxn
+      moveEl = null;
+      tapStart = null;
+      touchTarget = null;
+      touchEvt = null;
+      loopId = null;
+      lastX = null;
+      lastY = null;
 
     }
 
