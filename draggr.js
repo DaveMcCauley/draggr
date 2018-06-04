@@ -93,6 +93,7 @@ console.log("FOUND draggr.js");
       el.addEventListener('touchstart', this.touchStart, true);
       el.addEventListener('touchmove', this.touchMove, true);
       el.addEventListener('touchend', this.touchEnd, true);
+      el.addEventListener('touchcancel', this.touchCancel, true);
 
     },
 
@@ -317,7 +318,7 @@ console.log("FOUND draggr.js");
       if(target && target.className === 'draggr-item') {
         if(touchTarget !== target) {
           if(touchTarget) {touchTarget.style.border = "";}
-          target.style.border = "3px solid #0f0";
+          //arget.style.border = "3px solid #0f0";
           touchTarget = target;
         }
       }
@@ -348,13 +349,15 @@ console.log("FOUND draggr.js");
     },
 
     touchMove: function(evt) {
-
+      if(evt.preventDefault) {
+        evt.preventDefault(); // Necessary. Prevents redirect of doom!
+      }
       //let target = document.elementFromPoint(evt.touches[0].clientX, evt.touches[0].clientY);
       //console.log("target", target);
 
 
       // for emulatedDrag
-      //console.log("touchMove:", evt.touches ? evt.touches[0] : evt);
+      console.log("touchMove:", evt.touches ? evt.touches[0] : evt);
       touchEvt = evt.touches ? evt.touches[0] : evt;
 
     },
@@ -421,8 +424,6 @@ console.log("FOUND draggr.js");
       dragEl.style.display = "none";
       let target = document.elementFromPoint(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
       console.log("  touchEnd:", target);
-      if(target === moveEl)
-        return; // TODO: consider adding as child? sibling?
 
       if(target === ghostEl) {
         if(dropChild) {
@@ -471,6 +472,11 @@ console.log("FOUND draggr.js");
       lastX = null;
       lastY = null;
 
+    },
+
+    touchCancel: function(evt) {
+      evt.preventDefault();
+      console.log("touchCancel: called");
     }
 
   }
