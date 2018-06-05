@@ -109,14 +109,7 @@ console.log("LOADED draggr.js");
         dragStartY = evt.touches[0].clientY
       }
 
-      if(!dropzoneEl) {
-        let rect = moveEl.getBoundingClientRect();
-        dropzoneEl = evt.target.cloneNode(true);
-        // TODO: apply class
-        dropzoneEl.style.border = "2px solid green";
-        dropzoneEl.style.opacity = 0.5;
-        rootEl.insertBefore(dropzoneEl, moveEl.nextElementSibling);
-      }
+
 
       if(!ghostEl) {
         let rect = moveEl.getBoundingClientRect()
@@ -130,17 +123,29 @@ console.log("LOADED draggr.js");
         ghostEl.style.height = rect.height + 'px';
         ghostEl.style.opacity = '.5';
         ghostEl.style.position = 'fixed';
-        //ghostEl.style.position = 'absolute';
         ghostEl.style.pointerEvents = 'none';
         ghostEl.style.border = "3px solid orange";
       }
 
-      moveEl.style.opacity = 0.3;
+      if(!dropzoneEl) {
+        let rect = moveEl.getBoundingClientRect();
+        dropzoneEl = evt.target.cloneNode(true);
+        // TODO: apply class
+        dropzoneEl.style.border = "2px solid green";
+        dropzoneEl.style.opacity = 0.5;
+        rootEl.insertBefore(dropzoneEl, moveEl.nextElementSibling);
+      }
 
-      // only works on touch
-      // moveEl.style.visibility = 'hidden';
-      // moveEl.style.position = 'absolute';
-      // moveEl.style.zIndex = '-9999';
+      // This is tricky. If we set the opacity to 0, dragEnd will get
+      // called. If we don't handle it, we will get two drag images
+      // (native + our ghost). But if we set it to reallllly light,
+      // the native interface gets called on the super light image, so
+      // that hides (for all practical purpose) the native drag image.
+      // We set the other visibility properties in the drag handler to
+      // avoid having dragEnd called as the position and other properties
+      // update.
+
+      moveEl.style.opacity = '0.01';
 
     },
 
@@ -149,7 +154,7 @@ console.log("LOADED draggr.js");
     onDragStart: function(evt) {
       this.dragTouchStart(evt);
       evt.dataTransfer.effectAllowed = 'move';
-      evt.dataTransfer.setData('text/html', moveEl.innerHTML);
+      evt.dataTransfer.setData('text/html', 'moveEl.innerHTML');
     },
 
 
@@ -167,12 +172,19 @@ console.log("LOADED draggr.js");
 
       if(!target) return;
 
+      // update moveEl HERE, so it doesn't trigger dragEnd
+      // when we update properties. Could wrap this in a
+      // conditional?
+      moveEl.style.visibility = 'hidden';
+      moveEl.style.position = 'absolute';
+      moveEl.style.zIndex = '-9999';
+
       // move the ghost
       let dx = currentX - dragStartX;
       let dy = currentY - dragStartY;
       ghostEl.style.transform = "translate(" + dx + "px, " + dy + "px)";
-      lastX = currentX; // TOOD: Do I use these?
-      lastY = currentY; // TODO: Do I use these?
+      lastX = currentX;
+      lastY = currentY;
 
       // move the dropzone
       let prevEl = target.closest('.draggr-item');
@@ -255,7 +267,8 @@ console.log("LOADED draggr.js");
 
       if(target === dropzoneEl) {
         if(dropChild) {
-          let prevEl = dropzoneEl.previousSibling;
+          // let prevEl = dropzoneEl.previousSibling;  // needs to be 'closest'
+          let prevEl = dropzoneEl.previousElementSibling;
           // can't make it a child of itself and it needs a predecessor!
           if(!(prevEl === moveEl) && (prevEl.className === 'draggr-item')) {
             let childs = prevEl.querySelector(".draggr .children");
@@ -284,6 +297,9 @@ console.log("LOADED draggr.js");
       }
 
       // show the moved element!
+      moveEl.style.visibility = '';
+      moveEl.style.position = '';
+      moveEl.style.zIndex = '';
       moveEl.style.opacity = '';
 
       // only on touch!
