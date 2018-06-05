@@ -233,6 +233,8 @@ console.log("LOADED draggr.js");
 
     onDragOver: function(evt) {
       evt.preventDefault();
+      if(!moveEl || !ghostEl) // something dragged from outside!
+        return;
       // TODO: test for new point?
       ghostEl.style.display = 'none';
       let target = document.elementFromPoint(evt.clientX, evt.clientY);
@@ -302,19 +304,15 @@ console.log("LOADED draggr.js");
       moveEl.style.zIndex = '';
       moveEl.style.opacity = '';
 
-      // only on touch!
-      // if(moveEl) {
-      //   moveEl.style.visibility = '';
-      //   moveEl.style.position = '';
-      //   moveEl.style.zIndex = '';
-      // }
-
     },
 
 
 
     onDrop: function(evt) {
       evt.preventDefault(); // Necessary. Prevents redirect of doom!
+
+      if(!moveEl || !ghostEl) // something dragged from outside!
+        return;
 
       // TODO: test for new point?
       ghostEl.style.display = 'none';
@@ -347,7 +345,28 @@ console.log("LOADED draggr.js");
 
 
     onDragEnd: function(evt) {
+
+      // remove the ghost, we're done moving.
+      if(ghostEl && ghostEl.parentElement) {
+        ghostEl.parentElement.removeChild(ghostEl);
+      }
+
+      // remove the dropzone from the parent, we dont' need it anymore.
+      if(dropzoneEl && dropzoneEl.parentElement) {
+        dropzoneEl.parentElement.removeChild(dropzoneEl);
+        dropzoneEl = null;
+      }
+
+      // show the moved element!
+      if(moveEl) {
+        moveEl.style.visibility = '';
+        moveEl.style.position = '';
+        moveEl.style.zIndex = '';
+        moveEl.style.opacity = '';
+      }
+
       this.nullify();
+
     },
 
 
