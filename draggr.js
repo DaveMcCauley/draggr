@@ -94,7 +94,6 @@ console.log("LOADED draggr.js");
       el.addEventListener('touchcancel', this.onTouchCancel, true);
     },
 
-
     dragTouchStart: function (evt, touch) {
       dropChild = false;
       moveEl = evt.target;
@@ -175,9 +174,9 @@ console.log("LOADED draggr.js");
       // update moveEl HERE, so it doesn't trigger dragEnd
       // when we update properties. Could wrap this in a
       // conditional?
-      moveEl.style.visibility = 'hidden';
-      moveEl.style.position = 'absolute';
-      moveEl.style.zIndex = '-9999';
+        moveEl.style.visibility = 'hidden';
+        moveEl.style.position = 'absolute';
+        moveEl.style.zIndex = '-9999';
 
       // move the ghost
       let dx = currentX - dragStartX;
@@ -238,7 +237,6 @@ console.log("LOADED draggr.js");
       // TODO: test for new point?
       ghostEl.style.display = 'none';
       let target = document.elementFromPoint(evt.clientX, evt.clientY);
-//////////////////////////////////////////////////////////////////////////////////
       this.dragTouchDrag(target, evt.clientX, evt.clientY);
       ghostEl.style.display = '';
     },
@@ -299,10 +297,12 @@ console.log("LOADED draggr.js");
       }
 
       // show the moved element!
-      moveEl.style.visibility = '';
-      moveEl.style.position = '';
-      moveEl.style.zIndex = '';
-      moveEl.style.opacity = '';
+      if(moveEl) {
+        moveEl.style.visibility = '';
+        moveEl.style.position = '';
+        moveEl.style.zIndex = '';
+        moveEl.style.opacity = '';
+      }
 
     },
 
@@ -337,9 +337,10 @@ console.log("LOADED draggr.js");
 
 
     onDragLeave: function(evt) {
-      if(evt.target.className === 'draggr' && dropzoneEl && dropzoneEl.parentElement) {
+      //console.log("onDragLeave:", evt);
+      /*if(evt.target.className === 'draggr' && dropzoneEl && dropzoneEl.parentElement) {
         dropzoneEl.parentElement.removeChild(dropzoneEl);
-      }
+      }*/
     },
 
 
