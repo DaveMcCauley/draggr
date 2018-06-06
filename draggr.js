@@ -34,10 +34,10 @@ console.log("LOADED draggr.js");
     dragStartY,
     // deprecate dropItem, // TODO: Used?
     dropChild,
-    // FUTURE: oldIndex, // TOOD:
+    oldIndex, // TOOD:
     // deprecate, use dragStart  tapStart,
     // deprecate, never used it. touchTarget,
-    // FUTURE: newIndex, // TODO:
+    newIndex, // TODO:
     touchEvt,
     loopId,
     lastX,
@@ -98,6 +98,9 @@ console.log("LOADED draggr.js");
       dropChild = false;
       moveEl = evt.target;
       rootEl = parentEl = evt.target.parentElement;
+
+      oldIndex = this.index(evt.target);
+      console.log("oldIndex: ", oldIndex);
 
       if(!touch) {
         dragStartX = evt.clientX;
@@ -174,9 +177,9 @@ console.log("LOADED draggr.js");
       // update moveEl HERE, so it doesn't trigger dragEnd
       // when we update properties. Could wrap this in a
       // conditional?
-        moveEl.style.visibility = 'hidden';
-        moveEl.style.position = 'absolute';
-        moveEl.style.zIndex = '-9999';
+      moveEl.style.visibility = 'hidden';
+      moveEl.style.position = 'absolute';
+      moveEl.style.zIndex = '-9999';
 
       // move the ghost
       let dx = currentX - dragStartX;
@@ -302,6 +305,9 @@ console.log("LOADED draggr.js");
         moveEl.style.position = '';
         moveEl.style.zIndex = '';
         moveEl.style.opacity = '';
+
+        newIndex = this.index(moveEl);
+        console.log("newIndex: ", newIndex);
       }
 
     },
@@ -388,10 +394,46 @@ console.log("LOADED draggr.js");
       loopId = null;
       lastX = null;
       lastY = null;
-    }
-  }
+    },
 
-  Draggr.create = function(el) {
+
+    index: function(el) {
+      let i = 0;
+
+      if(!el || !el.parentNode) {
+        return -1;
+      }
+
+      while(el && (el = el.previousElementSibling)) {
+        if(this.matches(el, '.draggr-item')) {
+          i++;
+        }
+      }
+
+      return i;
+    },
+
+    matches: function (el, selector) {
+      // wrap in fx to handle the failed case, and also IE's
+      // goofy implementation.
+      if(el) {
+        try{
+          if(el.matches) {
+            return el.matches(selector);
+          } else if(el.msMatchesSelector) { // fracking IE
+            return el.msMatchesSelector(selector);
+          }
+        } catch (e) {
+          return false;
+        }
+      }
+      return false;
+    }
+
+  },
+
+
+    Draggr.create = function(el) {
     return new Draggr(el);
   };
 
