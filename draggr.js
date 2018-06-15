@@ -535,7 +535,7 @@ console.log("LOADED draggr.js");
       return retVal;
     }
 
-  }, // END OF PROTOTYPE
+  } // END OF PROTOTYPE
 
   function _extend(dest, src) {
     if (dest && src) {
