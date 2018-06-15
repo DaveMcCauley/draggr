@@ -60,7 +60,7 @@ console.log("LOADED draggr.js");
     // TODO: Implement defaults and config options.
     var defaults = {
       ghostClass: 'draggr-ghost',
-      chosenClass: 'draggr-chosen',
+      dropzoneClass: 'draggr-dropzone',
       dragClass: 'draggr-drag',
       parentClass: 'draggr-parent',
       childClass: 'draggr-child',
@@ -124,6 +124,8 @@ console.log("LOADED draggr.js");
       el.addEventListener('update', this._onDispatch, true);
       el.addEventListener('end', this._onDispatch, true);
       el.addEventListener('move', this._onDispatch, true);
+      ///////////////////////////////////////////////////////
+
     },
 
     // TODO: REMOVE IT's FOR DEBUGGING....
@@ -139,6 +141,7 @@ console.log("LOADED draggr.js");
       oldIndex = this._index(evt.target);
       console.log("oldIndex: ", oldIndex);
 
+      // TODO: Simplify
       if(!touch) {
         dragStartX = evt.clientX;
         dragStartY = evt.clientY;
@@ -160,19 +163,23 @@ console.log("LOADED draggr.js");
         ghostEl.style.left = rect.left + 'px';
         ghostEl.style.width = rect.width + 'px';
         ghostEl.style.height = rect.height + 'px';
-        ghostEl.style.opacity = '.5';
+        //ghostEl.style.opacity = '.5';
         ghostEl.style.position = 'fixed';
         ghostEl.style.pointerEvents = 'none';
-        ghostEl.style.border = "3px solid orange";
+        //ghostEl.style.border = "3px solid orange";
+
+        _toggleClass(ghostEl, this.options.ghostClass, true);
       }
 
       if(!dropzoneEl) {
         let rect = moveEl.getBoundingClientRect();
         dropzoneEl = evt.target.cloneNode(true);
         // TODO: apply class
-        dropzoneEl.style.border = "2px solid green";
-        dropzoneEl.style.opacity = 0.5;
+        //dropzoneEl.style.border = "2px solid green";
+        //dropzoneEl.style.opacity = 0.5;
         rootEl.insertBefore(dropzoneEl, moveEl.nextElementSibling);
+
+        _toggleClass(dropzoneEl, this.options.dropzoneClass, true);
       }
 
       this._dispatchEvent(this, rootEl, 'choose', moveEl, rootEl, rootEl, oldIndex)
@@ -548,6 +555,22 @@ console.log("LOADED draggr.js");
     }
 
   } // END OF PROTOTYPE
+
+
+
+  function _toggleClass(el, name, state) {
+    if(el) {
+      if(el.classList) {
+        el.classList[state ? 'add' : 'remove'](name);
+      }
+      else {
+        var className = (' ' + el.className + ' ').replace(R_SPACE, ' ').replace(' ' + name + ' ', ' ');
+        el.className = (className + (state ? ' ' + name : '')).replace(R_SPACE, ' ');
+      }
+    }
+  }
+
+
 
   function _extend(dest, src) {
     if (dest && src) {
