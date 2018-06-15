@@ -27,6 +27,8 @@ console.log("LOADED draggr.js");
     parentEl,
     ghostEl,
     rootEl,
+    prevEl,
+
     // deprecate: nextEl,
     moveEl,
     // deprecate: dragOffsetX,
@@ -137,6 +139,7 @@ console.log("LOADED draggr.js");
       dropChild = false;
       moveEl = evt.target;
       rootEl = parentEl = evt.target.parentElement;
+      prevEl = moveEl.nextElementSibling;
 
       oldIndex = this._index(evt.target);
       console.log("oldIndex: ", oldIndex);
@@ -177,7 +180,7 @@ console.log("LOADED draggr.js");
         // TODO: apply class
         //dropzoneEl.style.border = "2px solid green";
         //dropzoneEl.style.opacity = 0.5;
-        rootEl.insertBefore(dropzoneEl, moveEl.nextElementSibling);
+        rootEl.insertBefore(dropzoneEl, prevEl);
 
         _toggleClass(dropzoneEl, this.options.dropzoneClass, true);
       }
@@ -240,14 +243,21 @@ console.log("LOADED draggr.js");
       lastX = currentX;
       lastY = currentY;
 
-      // move the dropzone
-      let prevEl = target.closest('.draggr-item');
+      // update the prevEl (element above the drag position target)
+      prevEl = target.closest('.draggr-item');
+
+      // move the dropzoneEl if necessary.
+
       // they have to share the same parent, otherwise they could be parent/child
       if(prevEl && (target.parentNode === prevEl.parentNode)) {
         var rect = prevEl.getBoundingClientRect();
         // try it with half/half
         var next = (currentY - rect.top)/(rect.bottom - rect.top) > .5;
         if(!dropzoneEl.contains(prevEl.parentNode)) {
+          // TODO: Simplify testing here. It can be done *once*.
+          if(next && prevEl.nextSibling || !next && prevEl) {
+            _toggleClass(dropzoneEl.previousElementSibling, this.options.parentClass, false);
+          }
           prevEl.parentNode.insertBefore(dropzoneEl, next && prevEl.nextSibling || !next && prevEl || null);
         }
       }
@@ -330,7 +340,7 @@ console.log("LOADED draggr.js");
           let prevEl = dropzoneEl.previousElementSibling;
           // can't make it a child of itself and it needs a predecessor!
           if(!(prevEl === moveEl) && prevEl.classList.contains('draggr-item')) {
-            let childs = prevEl.querySelector(".draggr .children");
+            let childs = prevEl.querySelector(".draggr");
             if (childs) {
               // TODO: don't add if childs already contains the moveEl
               childs.appendChild(moveEl);
