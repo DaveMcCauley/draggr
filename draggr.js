@@ -52,7 +52,7 @@ console.log("LOADED draggr.js");
     }
 
     this.el = el;
-    //this.options = options = _extend({}, options);
+    this.options = options = _extend({}, options);
 
     // Export instance
     el[expando] = this;
@@ -537,8 +537,8 @@ console.log("LOADED draggr.js");
 
   }, // END OF PROTOTYPE
 
-  Draggr._extend = function(dest, src) {
-    if (dist && src) {
+  function _extend(dest, src) {
+    if (dest && src) {
       for (var key in src) {
         if (src.hasOwnProperty(key)) {
           dest[key] = src[key];
@@ -546,7 +546,7 @@ console.log("LOADED draggr.js");
       }
     }
     return dest;
-  };
+  }
 
   Draggr.create = function(el) {
     return new Draggr(el);

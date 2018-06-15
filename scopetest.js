@@ -33,34 +33,46 @@
   function Scoper(options) {
     this.extenionRes = _extend({}, options);
     this.options = options;
-  } // end Scoper class def
+
+    // Bind all private methods. Otherwise we'll get wonky this.
+    // when binding the functions to an HTMLElement. this will
+    // be the lement, not the Scoper.
+    console.log("fn:");
+    for(var fn in this) {
+      console.log("  fn[]:", fn);
+      if(fn.charAt(0) === '_' && typeof this[fn] === 'function') {
+        this[fn] = this[fn].bind(this);
+      }
+    }
+
+  } /////////////////////// end Scoper class def
 
   //@lends Scoper.prototype
   Scoper.prototype = {
     constructor: Scoper,
-    prototypeFxn: function() {
+    _prototypeFxn: function() {
       console.log("prototypeFxn:");
       return true;
     },
-    destroy: function() {
+    _destroy: function() {
       console.log("destroy:");
       return true;;
     },
-    whoami: function() {
+    _whoami: function() {
       console.log("Scoper.prototype.whoami: ");
       console.log("  name: ", this.options.name);
       console.log("  closureVar: ", closureVar);
     },
-    setClosureVar: function(val) {
+    _setClosureVar: function(val) {
       console.log("Scoper.prototype.setClosureVar: ");
       let ret = _extend(val);
       console.log('  ret:', ret);
       closureVar = val;
     },
-    genericHandler(evt) {
+    _genericHandler(evt) {
       console.log("Scoper.prototype.genericHandler:", evt);
       console.log("  _extend:", _extend());
-      this.setClosureVar('IngaBinga');
+      this._setClosureVar('IngaBinga');
       expando();
       console.log("  closureVar:", closureVar);
       return true;

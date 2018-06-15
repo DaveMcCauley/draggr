@@ -71,11 +71,11 @@
       Scoper.create({name: 'A'}),
       Scoper.create({name: 'B'})
     ];
-    Scopers[0].setClosureVar("Ungabuna!");
-    Scopers[0].whoami();
-    Scopers[1].whoami();
-    Scopers[0].genericHandler({name: 'fingafanga'});
-    Scopers[0].whoami();
+    Scopers[0]._setClosureVar("Ungabuna!");
+    Scopers[0]._whoami();
+    Scopers[1]._whoami();
+    Scopers[0]._genericHandler({name: 'fingafanga'});
+    Scopers[0]._whoami();
   </script>
 </body>
 </html>
