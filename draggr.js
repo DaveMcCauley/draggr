@@ -42,7 +42,9 @@ console.log("LOADED draggr.js");
     loopId,
     lastX,
     lastY,
-    expando = 'Draggr' + (new Date).getTime();
+    expando = 'Draggr' + (new Date).getTime(),
+    R_SPACE = /\s+/g;
+
 
   function Draggr(el, options) {
     if(!(el && el.nodeType && el.nodeType === 1)) {
@@ -50,7 +52,7 @@ console.log("LOADED draggr.js");
     }
 
     this.el = el;
-    this.options = {}; // options = _extend({}, options);
+    //this.options = options = _extend({}, options);
 
     // Export instance
     el[expando] = this;
@@ -533,8 +535,18 @@ console.log("LOADED draggr.js");
       return retVal;
     }
 
+  }, // END OF PROTOTYPE
 
-  },
+  Draggr._extend = function(dest, src) {
+    if (dist && src) {
+      for (var key in src) {
+        if (src.hasOwnProperty(key)) {
+          dest[key] = src[key];
+        }
+      }
+    }
+    return dest;
+  };
 
   Draggr.create = function(el) {
     return new Draggr(el);

@@ -64,5 +64,18 @@
       Draggr.create(item);
     });
   </script>
+  <script src="scopetest.js"></script>
+  <script>
+    // testing some scoping!
+    var Scopers = [
+      Scoper.create({name: 'A'}),
+      Scoper.create({name: 'B'})
+    ];
+    Scopers[0].setClosureVar("Ungabuna!");
+    Scopers[0].whoami();
+    Scopers[1].whoami();
+    Scopers[0].genericHandler({name: 'fingafanga'});
+    Scopers[0].whoami();
+  </script>
 </body>
 </html>
