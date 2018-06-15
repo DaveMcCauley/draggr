@@ -259,7 +259,7 @@ console.log("LOADED draggr.js");
         parentEl.style.border = "";
         // update the current parent property. (may need this later)
         parentEl = prevEl.parentNode;
-        parentEl.style.border = "1px solid #f0f";
+        //parentEl.style.border = "1px solid #f0f";
       }
 
       // bump if we are on the dropzone element and X > 50px offset from the side
@@ -267,15 +267,19 @@ console.log("LOADED draggr.js");
       // element when (if?) we drop it.
       if(target === dropzoneEl) {
         // don't add child if at the top of the list!
+        // TODO: Optimize to single query of dropzoneEl.previousElementStibling
+        //       possibly with !!(prevs);
         if((currentX > dragStartX + 50) && dropzoneEl.previousElementSibling) {
           dropzoneEl.style.marginLeft = "50px";
           dropChild = true;
+          _toggleClass(dropzoneEl.previousElementSibling, this.options.parentClass, true);
         }
         else if((currentX > dragStartX) && dropzoneEl.previousElementSibling) { //debounces the shift.
           // TODO: this may be where my laggy problem lies...
           return;
         }
         else {
+          _toggleClass(dropzoneEl.previousElementSibling, this.options.parentClass, false);
           dropzoneEl.style.marginLeft = "";
           dropChild = false;
         }
@@ -325,7 +329,7 @@ console.log("LOADED draggr.js");
           // let prevEl = dropzoneEl.previousSibling;  // needs to be 'closest'
           let prevEl = dropzoneEl.previousElementSibling;
           // can't make it a child of itself and it needs a predecessor!
-          if(!(prevEl === moveEl) && (prevEl.className === 'draggr-item')) {
+          if(!(prevEl === moveEl) && prevEl.classList.contains('draggr-item')) {
             let childs = prevEl.querySelector(".draggr .children");
             if (childs) {
               // TODO: don't add if childs already contains the moveEl
