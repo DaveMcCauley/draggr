@@ -29,6 +29,7 @@ console.log("LOADED draggr.js");
     rootEl,
     // deprecate: nextEl,
     moveEl,
+    parent2b,
     // deprecate: dragOffsetX,
     dragStartX,
     dragStartY,
@@ -136,6 +137,9 @@ console.log("LOADED draggr.js");
     _dragTouchStart: function (evt, touch) {
       dropChild = false;
       moveEl = evt.target;
+      parent2b = evt.target.previousElementSibling;
+      // for debug;
+
       rootEl = parentEl = evt.target.parentElement;
 
       oldIndex = this._index(evt.target);
@@ -150,8 +154,6 @@ console.log("LOADED draggr.js");
         dragStartX = evt.touches[0].clientX
         dragStartY = evt.touches[0].clientY
       }
-
-
 
       if(!ghostEl) {
         let rect = moveEl.getBoundingClientRect()
@@ -171,6 +173,8 @@ console.log("LOADED draggr.js");
         _toggleClass(ghostEl, this.options.ghostClass, true);
       }
 
+
+
       if(!dropzoneEl) {
         let rect = moveEl.getBoundingClientRect();
         dropzoneEl = evt.target.cloneNode(true);
@@ -178,7 +182,6 @@ console.log("LOADED draggr.js");
         //dropzoneEl.style.border = "2px solid green";
         //dropzoneEl.style.opacity = 0.5;
         rootEl.insertBefore(dropzoneEl, moveEl.nextElementSibling);
-
         _toggleClass(dropzoneEl, this.options.dropzoneClass, true);
       }
 
@@ -193,13 +196,17 @@ console.log("LOADED draggr.js");
       // avoid having dragEnd called as the position and other properties
       // update.
 
-      moveEl.style.opacity = '0.01';
+      moveEl.style.opacity = '0.0001';
 
       if(touch) {
-        moveEl.style.visibility = 'hidden';
+        // moveEl.style.visibility = 'hidden';
         moveEl.style.position = 'absolute';
         moveEl.style.zIndex = '-9999';
+      //moveEl.style.display = 'none';
       }
+
+            /// just sticking it here for the moment.
+      _toggleClass(moveEl, 'moveEl', true);
 
     },
 
@@ -207,8 +214,9 @@ console.log("LOADED draggr.js");
 
     _onDragStart: function(evt) {
       this._dragTouchStart(evt);
+
       evt.dataTransfer.effectAllowed = 'move';
-      evt.dataTransfer.setData('text/html', 'moveEl.innerHTML');
+      evt.dataTransfer.setData('text/html', 'Ungabunga');
     },
 
 
@@ -229,9 +237,14 @@ console.log("LOADED draggr.js");
       // update moveEl HERE, so it doesn't trigger dragEnd
       // when we update properties. Could wrap this in a
       // conditional?
-      moveEl.style.visibility = 'hidden';
-      moveEl.style.position = 'absolute';
-      moveEl.style.zIndex = '-9999';
+      // moveEl.style.visibility = 'hidden';
+      // moveEl.style.position = 'absolute';
+      // moveEl.style.zIndex = '-9999';
+      if(!moveEl.style.display) {
+        parent2b = moveEl.previousElementSibling;
+        moveEl.style.display = 'none';
+        return;
+      }
 
       // move the ghost
       let dx = currentX - dragStartX;
@@ -242,6 +255,16 @@ console.log("LOADED draggr.js");
 
       // move the dropzone
       let prevEl = target.closest('.draggr-item');
+
+      // super janky. But it's "working".
+      _toggleClass(parent2b, this.options.parentClass, false);
+      if(prevEl && prevEl.previousElementSibling && prevEl.previousElementSibling.classList.contains('moveEl')) {
+        parent2b = prevEl.previousElementSibling.previousElementSibling;
+      }
+      else {
+        parent2b = prevEl.previousElementSibling;
+      }
+
       // they have to share the same parent, otherwise they could be parent/child
       if(prevEl && (target.parentNode === prevEl.parentNode)) {
         var rect = prevEl.getBoundingClientRect();
@@ -249,6 +272,9 @@ console.log("LOADED draggr.js");
         var next = (currentY - rect.top)/(rect.bottom - rect.top) > .5;
         if(!dropzoneEl.contains(prevEl.parentNode)) {
           prevEl.parentNode.insertBefore(dropzoneEl, next && prevEl.nextSibling || !next && prevEl || null);
+          // this doesnt work becaue prevEl.previuous element could be draggr-ghost.
+          // so could prevEl.... uggg. so many fucking edge cases.
+
         }
       }
 
@@ -272,14 +298,17 @@ console.log("LOADED draggr.js");
         if((currentX > dragStartX + 50) && dropzoneEl.previousElementSibling) {
           dropzoneEl.style.marginLeft = "50px";
           dropChild = true;
-          _toggleClass(dropzoneEl.previousElementSibling, this.options.parentClass, true);
+          _toggleClass(parent2b, this.options.parentClass, true);
+
+
+
         }
         else if((currentX > dragStartX) && dropzoneEl.previousElementSibling) { //debounces the shift.
           // TODO: this may be where my laggy problem lies...
           return;
         }
         else {
-          _toggleClass(dropzoneEl.previousElementSibling, this.options.parentClass, false);
+          _toggleClass(parent2b, this.options.parentClass, false);
           dropzoneEl.style.marginLeft = "";
           dropChild = false;
         }
@@ -295,6 +324,7 @@ console.log("LOADED draggr.js");
         return;
       // TODO: test for new point?
       ghostEl.style.display = 'none';
+
       let target = document.elementFromPoint(evt.clientX, evt.clientY);
       this._dragTouchDrag(target, evt.clientX, evt.clientY);
       ghostEl.style.display = '';
@@ -328,6 +358,9 @@ console.log("LOADED draggr.js");
         if(dropChild) {
           // let prevEl = dropzoneEl.previousSibling;  // needs to be 'closest'
           let prevEl = dropzoneEl.previousElementSibling;
+
+          prevEl = _closestItem(target);
+
           // can't make it a child of itself and it needs a predecessor!
           if(!(prevEl === moveEl) && prevEl.classList.contains('draggr-item')) {
             let childs = prevEl.querySelector(".draggr .children");
@@ -382,6 +415,7 @@ console.log("LOADED draggr.js");
         moveEl.style.position = '';
         moveEl.style.zIndex = '';
         moveEl.style.opacity = '';
+        moveEl.style.display = '';
       }
 
       this._dispatchEvent(this, rootEl, 'end', moveEl, parentEl, rootEl, oldIndex, newIndex);
@@ -422,6 +456,7 @@ console.log("LOADED draggr.js");
       /*if(evt.target.className === 'draggr' && dropzoneEl && dropzoneEl.parentElement) {
         dropzoneEl.parentElement.removeChild(dropzoneEl);
       }*/
+      console.log("onDragLeave:", evt);
     },
 
 
@@ -445,6 +480,7 @@ console.log("LOADED draggr.js");
         moveEl.style.position = '';
         moveEl.style.zIndex = '';
         moveEl.style.opacity = '';
+        moveEl.style.display = '';
       }
 
       this._nullify();
@@ -585,6 +621,14 @@ console.log("LOADED draggr.js");
       }
     }
     return dest;
+  }
+
+  function _closestItem(startEl) {
+    let testEl = startEl.previousElementSibling;
+    while(testEl && (testEl.classList.contains('moveEl') || testEl.classList.contains('draggr-dropzone'))) {
+      testEl = testEl.previousElementSibling;
+    }
+    return testEl;
   }
 
   Draggr.create = function(el) {
