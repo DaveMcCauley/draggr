@@ -27,17 +27,12 @@ console.log("LOADED draggr.js");
     parentEl,
     ghostEl,
     rootEl,
-    // deprecate: nextEl,
     moveEl,
     prevEl,
-    // deprecate: dragOffsetX,
     dragStartX,
     dragStartY,
-    // deprecate dropItem, // TODO: Used?
     dropChild,
     oldIndex, // TOOD:
-    // deprecate, use dragStart  tapStart,
-    // deprecate, never used it. touchTarget,
     newIndex, // TODO:
     touchEvt,
     loopId,
@@ -55,17 +50,15 @@ console.log("LOADED draggr.js");
     this.el = el;
     this.options = options = _extend({}, options);
 
-    // Export instance
     el[expando] = this;
 
-    // TODO: Implement defaults and config options.
     var defaults = {
       ghostClass: 'draggr-ghost',
       dropzoneClass: 'draggr-dropzone',
       dragClass: 'draggr-drag',
       parentClass: 'draggr-parent',
       childClass: 'draggr-child',
-      childShift: '50px'
+      childShift: 50
     }
 
     for(var name in defaults) {
@@ -79,18 +72,6 @@ console.log("LOADED draggr.js");
         this[fn] = this[fn].bind(this);
       }
     }
-
-    // DEPRECATE. Using binding as above.
-    // this._onDragStart = this._onDragStart.bind(this);
-    // this._onDragOver = this._onDragOver.bind(this);
-    // this._onDragLeave = this._onDragLeave.bind(this);
-    // this._onDragEnd = this._onDragEnd.bind(this);
-    // this._onDrop = this._onDrop.bind(this);
-    // this._onTouchStart = this._onTouchStart.bind(this);
-    // this._onTouchMove = this._onTouchMove.bind(this);
-    // this._onTouchEnd = this._onTouchEnd.bind(this);
-    // this._onTouchCancel = this._onTouchCancel.bind(this);
-    // this._emulateDrag = this._emulateDrag.bind(this);
 
     // TODO: REMOVE IT"S JUST FOR DEBUGGING
     this._onDispatch = this._onDispatch.bind(this);
@@ -117,7 +98,7 @@ console.log("LOADED draggr.js");
       el.addEventListener('touchend', this._onTouchEnd, true);
       el.addEventListener('touchcancel', this._onTouchCancel, true);
 
-      // TODO: REMOVE IT'S JUST FOR DEBUGGING....
+    // TODO: REMOVE IT'S JUST FOR DEBUGGING....
       el.addEventListener('choose', this._onDispatch, true);
       el.addEventListener('add', this._onDispatch, true);
       el.addEventListener('remove', this._onDispatch, true);
@@ -125,14 +106,15 @@ console.log("LOADED draggr.js");
       el.addEventListener('update', this._onDispatch, true);
       el.addEventListener('end', this._onDispatch, true);
       el.addEventListener('move', this._onDispatch, true);
-      ///////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
 
     },
 
-    // TODO: REMOVE IT's FOR DEBUGGING....
+  // TODO: REMOVE IT's FOR DEBUGGING....
     _onDispatch: function(evt) {
       console.log("_onDispatch:", evt.type, " ", evt);
     },
+  //////////////////////////////////////////////////////
 
     _dragTouchStart: function (evt, touch) {
       dropChild = false;
@@ -144,9 +126,7 @@ console.log("LOADED draggr.js");
       rootEl = parentEl = evt.target.parentElement;
 
       oldIndex = _index(evt.target);
-      console.log("oldIndex: ", oldIndex);
 
-      // TODO: Simplify
       if(!touch) {
         dragStartX = evt.clientX;
         dragStartY = evt.clientY;
@@ -160,26 +140,18 @@ console.log("LOADED draggr.js");
         let rect = moveEl.getBoundingClientRect()
         ghostEl = evt.target.cloneNode(true);
         rootEl.appendChild(ghostEl);
-        // // document.body.appendChild(ghostEl);
-        // TODO: apply classes
         ghostEl.style.top = rect.top + 'px';
         ghostEl.style.left = rect.left + 'px';
         ghostEl.style.width = rect.width + 'px';
         ghostEl.style.height = rect.height + 'px';
-        //ghostEl.style.opacity = '.5';
         ghostEl.style.position = 'fixed';
         ghostEl.style.pointerEvents = 'none';
-        //ghostEl.style.border = "3px solid orange";
-
         _toggleClass(ghostEl, this.options.ghostClass, true);
       }
 
       if(!dropzoneEl) {
         let rect = moveEl.getBoundingClientRect();
         dropzoneEl = evt.target.cloneNode(true);
-        // TODO: apply class
-        //dropzoneEl.style.border = "2px solid green";
-        //dropzoneEl.style.opacity = 0.5;
         rootEl.insertBefore(dropzoneEl, moveEl.nextElementSibling);
         _toggleClass(dropzoneEl, this.options.dropzoneClass, true);
       }
@@ -198,13 +170,10 @@ console.log("LOADED draggr.js");
       moveEl.style.opacity = '0.0001';
 
       if(touch) {
-        // moveEl.style.visibility = 'hidden';
         moveEl.style.position = 'absolute';
         moveEl.style.zIndex = '-9999';
-      //moveEl.style.display = 'none';
       }
 
-            /// just sticking it here for the moment.
       _toggleClass(moveEl, 'moveEl', true);
 
     },
@@ -213,7 +182,6 @@ console.log("LOADED draggr.js");
 
     _onDragStart: function(evt) {
       this._dragTouchStart(evt);
-
       evt.dataTransfer.effectAllowed = 'move';
       evt.dataTransfer.setData('text/html', 'Ungabunga');
     },
@@ -233,20 +201,8 @@ console.log("LOADED draggr.js");
 
       if(!target) return;
 
-      // TODO: Combine with earl exit above?
-      // could also use target.parent != '.draggr' or the like.
-      // if(!target.classList.contains('draggr-item')) {
-      //   return;
-      // }
-
-      // update moveEl HERE, so it doesn't trigger dragEnd
-      // when we update properties. Could wrap this in a
-      // conditional?
-      // moveEl.style.visibility = 'hidden';
-      // moveEl.style.position = 'absolute';
-      // moveEl.style.zIndex = '-9999';
+      // turn off display ONLY after drag starts.
       if(!moveEl.style.display) {
-        //parent2b = moveEl.previousElementSibling;
         moveEl.style.display = 'none';
         return;
       }
@@ -258,25 +214,6 @@ console.log("LOADED draggr.js");
       lastX = currentX;
       lastY = currentY;
 
-      // move the dropzone
-      // dont' need this as I've killed off events on children.
-      // this is always going to be the target!
-      // let prevEl = target.closest('.draggr-item');
-
-      // DEBUG TEST
-      if(!target.classList.contains('draggr-item')){
-        console.log("NOT AN ITEM!!!!!!!!!");
-      }
-
-      // super janky. But it's "working".
-      // _toggleClass(parent2b, this.options.parentClass, false);
-      // if(prevEl && prevEl.previousElementSibling && prevEl.previousElementSibling.classList.contains('moveEl')) {
-      //   parent2b = prevEl.previousElementSibling.previousElementSibling;
-      // }
-      // else {
-      //   parent2b = prevEl.previousElementSibling;
-      // }
-
       // they have to share the same parent, otherwise they could be parent/child,
       // or we have moved to a different list altogether.
       if(target.parentNode === parentEl) {
@@ -286,7 +223,6 @@ console.log("LOADED draggr.js");
           var rect = target.getBoundingClientRect();
           // try it with half/half
           var next = (currentY - rect.top)/(rect.bottom - rect.top) > .5;
-
           // yes, it needs to be like this to debounce it.
           if(next && !dropzoneEl.contains(target.parentNode)) {
             // move it down.
@@ -294,50 +230,27 @@ console.log("LOADED draggr.js");
             let oldEl = prevEl;
             prevEl = _closestItem(dropzoneEl);
             if(oldEl !== prevEl) {
-              console.log('moved dropzone down...');
               _toggleClass(oldEl, 'draggr-prevEl', false);
               _toggleClass(prevEl, 'draggr-prevEl', true);
             }
           }
           else if(!next && !dropzoneEl.contains(target.parentNode)) {
             target.parentNode.insertBefore(dropzoneEl, target || null);
-            // prevEl = target.previousElementSibling;
             let oldEl = prevEl;
             prevEl = _closestItem(dropzoneEl);
             if(oldEl !== prevEl) {
-              console.log('moved dropzoneEl up...');
               _toggleClass(oldEl, 'draggr-prevEl', false);
               _toggleClass(prevEl, 'draggr-prevEl', true);
             }
 
           }
 
-          // if(!dropzoneEl.contains(target.parentNode)) {
-          //   target.parentNode.insertBefore(dropzoneEl, next && target.nextSibling || !next && target || null);
-          //               _toggleClass(prevEl, 'draggr-prevEl', false);
-          //   prevEl = _closestItem(dragzoneEl);
-          //   _toggleClass(prevEl, 'draggr-prevEl', true);
-
-          // //if(next) {
-          //   // update teh previous element after we move it.
-          //   // for now, always update.
-          //   // TODO: HACK. OPtimize this good grief.
-          //   var oldPrevEl = prevEl;
-          //   prevEl = _closestItem(dropzoneEl);
-          //   if(oldPrevEl != prevEl) {
-          //     _toggleClass(oldPrevEl, 'draggr-prevEl', false);
-          //     _toggleClass(prevEl, 'draggr-prevEl', true);
-          //   }
-          // //}
         } else {
         // if we *are* over the dropzone, we just update the prevEl. And we need
         // to do this because the update doesn't gurantee it works w/frame rate, etc.
           let oldEl = prevEl;
           prevEl = _closestItem(dropzoneEl);
           if(oldEl !== prevEl) {
-            console.log('on dropzone, don\'t move it, update prevEl...');
-            console.log('oldEl:', oldEl);
-            console.log('prevEl:', prevEl);
             _toggleClass(oldEl, 'draggr-prevEl', false);
             _toggleClass(prevEl, 'draggr-prevEl', true);
           }
@@ -345,8 +258,7 @@ console.log("LOADED draggr.js");
 
       }
       else {
-        // we've switched parents.
-        // update the parentEl.
+        // we've switched parents. Updat the parentEl.
         parentEl = target.parentNode;
         return;
       }
@@ -356,19 +268,16 @@ console.log("LOADED draggr.js");
       // element when (if?) we drop it.
       if(target === dropzoneEl) {
         // don't add child if at the top of the list!
-        // TODO: Optimize to single query of dropzoneEl.previousElementStibling
-        //       possibly with !!(prevs);
-        if((currentX > dragStartX + 50) && dropzoneEl.previousElementSibling) {
-          dropzoneEl.style.marginLeft = "50px";
+        // TODO: replace dropzoneEl with prevEl
+        if((currentX > dragStartX + this.options.childShift) && dropzoneEl.previousElementSibling) {
+          dropzoneEl.style.marginLeft = this.options.childShift + "px";
           dropChild = true;
-          //_toggleClass(parent2b, this.options.parentClass, true);
         }
         else if((currentX > dragStartX) && dropzoneEl.previousElementSibling) { //debounces the shift.
-          // TODO: this may be where my laggy problem lies...
+          // TODO: handle classes
           return;
         }
         else {
-          //_toggleClass(parent2b, this.options.parentClass, false);
           dropzoneEl.style.marginLeft = "";
           dropChild = false;
         }
@@ -413,6 +322,8 @@ console.log("LOADED draggr.js");
 
 
     _dragTouchDrop: function(target, evt) {
+
+      // TODO: REFACTOR to use closure-scoped prevEl rather than local.
 
       if(target === dropzoneEl) {
         if(dropChild) {
@@ -523,7 +434,7 @@ console.log("LOADED draggr.js");
       /*if(evt.target.className === 'draggr' && dropzoneEl && dropzoneEl.parentElement) {
         dropzoneEl.parentElement.removeChild(dropzoneEl);
       }*/
-      console.log("onDragLeave:", evt);
+      //console.log("onDragLeave:", evt);
     },
 
 
@@ -558,7 +469,7 @@ console.log("LOADED draggr.js");
 
     _onTouchCancel: function(evt) {
       evt.preventDefault();
-      console.log("touchCancel: called");
+      //console.log("touchCancel: called");
     },
 
 
@@ -689,17 +600,17 @@ console.log("LOADED draggr.js");
 
   function _closestItem(startEl) {
     let testEl = startEl.previousElementSibling;
-    // RESUME NOTE: You have moveEl, and dragzoneEl available. Just cmompare them directly here.
-    //              rather than using classes.
     while(testEl && (testEl === moveEl || testEl === dropzoneEl)) {
       testEl = testEl.previousElementSibling;
     }
     return testEl;
   }
 
-  Draggr.create = function(el) {
-    return new Draggr(el);
+
+  Draggr.create = function(el, options) {
+    return new Draggr(el, options);
   };
+
 
   // Export
   Draggr.version = '1.0.0';
