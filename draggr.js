@@ -233,6 +233,12 @@ console.log("LOADED draggr.js");
 
       if(!target) return;
 
+      // TODO: Combine with earl exit above?
+      // could also use target.parent != '.draggr' or the like.
+      // if(!target.classList.contains('draggr-item')) {
+      //   return;
+      // }
+
       // update moveEl HERE, so it doesn't trigger dragEnd
       // when we update properties. Could wrap this in a
       // conditional?
@@ -313,7 +319,7 @@ console.log("LOADED draggr.js");
           //     _toggleClass(prevEl, 'draggr-prevEl', true);
           //   }
           // //}
-        }
+       }
       }
       else {
         // we've switched parents.
