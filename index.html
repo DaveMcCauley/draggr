@@ -60,8 +60,12 @@
   <script>
     var draggers = document.querySelectorAll('.draggr');
     var draggrs = [];
+    var dragconfig = {
+      childShift: 20,
+      onMove: function(){console.log("WHOA! IT WORKED!")}
+    };
     [].forEach.call(draggers, function(item) {
-      Draggr.create(item);
+      Draggr.create(item, dragconfig);
     });
   </script>
   <script src="scopetest.js"></script>
