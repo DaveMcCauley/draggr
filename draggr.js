@@ -288,18 +288,28 @@ console.log("LOADED draggr.js");
           var next = (currentY - rect.top)/(rect.bottom - rect.top) > .5;
 
           // yes, it needs to be like this to debounce it.
-          if(next && target.nextSibling !== dropzoneEl) {
+          if(next) {
             // move it down.
             target.parentNode.insertBefore(dropzoneEl, target.nextSibling || null);
-            _toggleClass(prevEl, 'draggr-prevEl', false);
+            let oldEl = prevEl;
             prevEl = _closestItem(dropzoneEl);
-            _toggleClass(prevEl, 'draggr-prevEl', true);
+            if(oldEl !== prevEl) {
+              console.log('moved dropzone down...');
+              _toggleClass(oldEl, 'draggr-prevEl', false);
+              _toggleClass(prevEl, 'draggr-prevEl', true);
+            }
           }
-          else if(!next && target.previousElementSibling !== dropzoneEl) {
+          else if(!next) {
             target.parentNode.insertBefore(dropzoneEl, target || null);
-            _toggleClass(prevEl, 'draggr-prevEl', false);
+            // prevEl = target.previousElementSibling;
+            let oldEl = prevEl;
             prevEl = _closestItem(dropzoneEl);
-            _toggleClass(prevEl, 'draggr-prevEl', true);
+            if(oldEl !== prevEl) {
+              console.log('moved dropzoneEl up...');
+              _toggleClass(oldEl, 'draggr-prevEl', false);
+              _toggleClass(prevEl, 'draggr-prevEl', true);
+            }
+
           }
 
           // if(!dropzoneEl.contains(target.parentNode)) {
@@ -319,7 +329,20 @@ console.log("LOADED draggr.js");
           //     _toggleClass(prevEl, 'draggr-prevEl', true);
           //   }
           // //}
-       }
+        } else {
+        // if we *are* over the dropzone, we just update the prevEl. And we need
+        // to do this because the update doesn't gurantee it works w/frame rate, etc.
+          let oldEl = prevEl;
+          prevEl = _closestItem(dropzoneEl);
+          if(oldEl !== prevEl) {
+            console.log('on dropzone, don\'t move it, update prevEl...');
+            console.log('oldEl:', oldEl);
+            console.log('prevEl:', prevEl);
+            _toggleClass(oldEl, 'draggr-prevEl', false);
+            _toggleClass(prevEl, 'draggr-prevEl', true);
+          }
+        }
+
       }
       else {
         // we've switched parents.
@@ -672,7 +695,7 @@ console.log("LOADED draggr.js");
     let testEl = startEl.previousElementSibling;
     // RESUME NOTE: You have moveEl, and dragzoneEl available. Just cmompare them directly here.
     //              rather than using classes.
-    while(testEl && (testEl === prevEl || testEl === dropzoneEl)) {
+    while(testEl && (testEl === moveEl || testEl === dropzoneEl)) {
       testEl = testEl.previousElementSibling;
     }
     return testEl;
