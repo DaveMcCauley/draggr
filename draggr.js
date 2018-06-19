@@ -288,7 +288,7 @@ console.log("LOADED draggr.js");
           var next = (currentY - rect.top)/(rect.bottom - rect.top) > .5;
 
           // yes, it needs to be like this to debounce it.
-          if(next) {
+          if(next && !dropzoneEl.contains(target.parentNode)) {
             // move it down.
             target.parentNode.insertBefore(dropzoneEl, target.nextSibling || null);
             let oldEl = prevEl;
@@ -299,7 +299,7 @@ console.log("LOADED draggr.js");
               _toggleClass(prevEl, 'draggr-prevEl', true);
             }
           }
-          else if(!next) {
+          else if(!next && !dropzoneEl.contains(target.parentNode)) {
             target.parentNode.insertBefore(dropzoneEl, target || null);
             // prevEl = target.previousElementSibling;
             let oldEl = prevEl;
