@@ -143,7 +143,7 @@ console.log("LOADED draggr.js");
 
       rootEl = parentEl = evt.target.parentElement;
 
-      oldIndex = this._index(evt.target);
+      oldIndex = _index(evt.target);
       console.log("oldIndex: ", oldIndex);
 
       // TODO: Simplify
@@ -184,7 +184,7 @@ console.log("LOADED draggr.js");
         _toggleClass(dropzoneEl, this.options.dropzoneClass, true);
       }
 
-      this._dispatchEvent(this, rootEl, 'choose', moveEl, rootEl, rootEl, oldIndex)
+      _dispatchEvent(this, rootEl, 'choose', moveEl, rootEl, rootEl, oldIndex)
 
       // This is tricky. If we set the opacity to 0, dragEnd will get
       // called. If we don't handle it, we will get two drag images
@@ -431,7 +431,7 @@ console.log("LOADED draggr.js");
               // call teh move event handler
               let moveRect = moveEl.getBoundingClientRect();
               let targetRect = target.getBoundingClientRect();
-              this._onMove(rootEl, this.el, moveEl, moveRect, target, targetRect, evt);
+              _onMove(rootEl, this.el, moveEl, moveRect, target, targetRect, evt);
             }
           }
         }
@@ -440,22 +440,22 @@ console.log("LOADED draggr.js");
             dropzoneEl.parentNode.insertBefore(moveEl, dropzoneEl);
             let moveRect = moveEl.getBoundingClientRect();
             let targetRect = target.getBoundingClientRect();
-            this._onMove(rootEl, this.el, moveEl, moveRect, target, targetRect, evt);
+            _onMove(rootEl, this.el, moveEl, moveRect, target, targetRect, evt);
           }
         }
 
         if(rootEl !== parentEl) {
-          newIndex = this._index(moveEl);
+          newIndex = _index(moveEl);
           console.log("newIndex: ", newIndex);
-          this._dispatchEvent(this, rootEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex); // dont' think I need the original event?
-          this._dispatchEvent(this, rootEl, 'remove', moveEl, parentEl, rootEl, oldIndex, newIndex);
-          this._dispatchEvent(this, parentEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
-          this._dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
+          _dispatchEvent(this, rootEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex); // dont' think I need the original event?
+          _dispatchEvent(this, rootEl, 'remove', moveEl, parentEl, rootEl, oldIndex, newIndex);
+          _dispatchEvent(this, parentEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
+          _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
         }
         else {
-          newIndex = this._index(moveEl);
-          this._dispatchEvent(this, rootEl, 'update', moveEl, parentEl, rootEl, oldIndex, newIndex);
-          this._dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
+          newIndex = _index(moveEl);
+          _dispatchEvent(this, rootEl, 'update', moveEl, parentEl, rootEl, oldIndex, newIndex);
+          _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
         }
       }
 
@@ -485,7 +485,7 @@ console.log("LOADED draggr.js");
         _toggleClass(prevEl, 'draggr-prevEl', false);
       }
 
-      this._dispatchEvent(this, rootEl, 'end', moveEl, parentEl, rootEl, oldIndex, newIndex);
+      _dispatchEvent(this, rootEl, 'end', moveEl, parentEl, rootEl, oldIndex, newIndex);
 
     },
 
@@ -572,97 +572,76 @@ console.log("LOADED draggr.js");
       loopId = null;
       lastX = null;
       lastY = null;
-    },
-
-    // TODO : Move to closure scope.
-    _index: function(el) {
-      let i = 0;
-
-      if(!el || !el.parentNode) {
-        return -1;
-      }
-
-      while(el && (el = el.previousElementSibling)) {
-        if(this._matches(el, '.draggr-item')) {
-          i++;
-        }
-      }
-
-      return i;
-    },
-
-    // TODO : Move to closure scope.
-    _matches: function (el, selector) {
-      // wrap in fx to handle the failed case, and also IE's
-      // goofy implementation.
-      if(el) {
-        try{
-          if(el.matches) {
-            return el.matches(selector);
-          } else if(el.msMatchesSelector) { // fracking IE
-            return el.msMatchesSelector(selector);
-          }
-        } catch (e) {
-          return false;
-        }
-      }
-      return false;
-    },
-
-
-    // TODO : Move to closure scope.
-    _dispatchEvent: function(draggr, rootEl, name, targetEl, toEl, fromEl, startIndex, newIndex, originalEvt) {
-      let evt = document.createEvent('Event'),
-          options = draggr.options,
-          onName = 'on' + name.charAt(0).toUpperCase() + name.substr(1);
-
-      evt.initEvent(name, true, true);
-
-      evt.to = toEl || rootEl;
-      evt.from = fromEl || rootEl;
-      evt.item = targetEl || rootEl;
-      evt.clone = null; // don't support cloning, but keep for API compatability.
-      evt.oldIndex = oldIndex;
-      evt.newIndex = newIndex;
-      evt.originalEvent = originalEvt;
-
-      rootEl.dispatchEvent(evt);
-
-      if(options[onName]) {
-        options[onName].call(draggr, evt);
-      }
-    },
-
-
-    // TODO : Move to closure scope.
-    _onMove: function(fromEl, toEl, dragEl, dragRect, targetEl, targetRect, originalEvt, willInsertAfter) {
-      let evt,
-          draggr = fromEl[expando],
-          onMoveFn = draggr.options.onMove,
-          retVal;
-
-      evt = document.createEvent('Event');
-      evt.initEvent('move', true, true);
-
-      evt.to = toEl;
-      evt.from = fromEl;
-      evt.dragged = dragEl;
-      evt.draggedRect = dragRect;
-      evt.related = targetEl || toEl;
-      evt.relatedRect = targetRect || toEl.getBoundingClientRect();
-      evt.willInsertAfter = willInsertAfter;
-      evt.originalEvent = originalEvt;
-
-      fromEl.dispatchEvent(evt);
-
-      if(onMoveFn) {
-        retVal = onMoveFn.call(draggr, evt, originalEvt);
-      }
-      return retVal;
     }
 
-  } // END OF PROTOTYPE
+  } // END OF PROTOTYPE  ///////////////////////////////////////////////////////
 
+
+  function _dispatchEvent(draggr, rootEl, name, targetEl, toEl, fromEl, startIndex, newIndex, originalEvt) {
+    let evt = document.createEvent('Event'),
+        options = draggr.options,
+        onName = 'on' + name.charAt(0).toUpperCase() + name.substr(1);
+
+    evt.initEvent(name, true, true);
+
+    evt.to = toEl || rootEl;
+    evt.from = fromEl || rootEl;
+    evt.item = targetEl || rootEl;
+    evt.clone = null; // don't support cloning, but keep for API compatability.
+    evt.oldIndex = oldIndex;
+    evt.newIndex = newIndex;
+    evt.originalEvent = originalEvt;
+
+    rootEl.dispatchEvent(evt);
+
+    if(options[onName]) {
+      options[onName].call(draggr, evt);
+    }
+  }
+
+
+  function _onMove(fromEl, toEl, dragEl, dragRect, targetEl, targetRect, originalEvt, willInsertAfter) {
+    let evt,
+        draggr = fromEl[expando],
+        onMoveFn = draggr.options.onMove,
+        retVal;
+
+    evt = document.createEvent('Event');
+    evt.initEvent('move', true, true);
+
+    evt.to = toEl;
+    evt.from = fromEl;
+    evt.dragged = dragEl;
+    evt.draggedRect = dragRect;
+    evt.related = targetEl || toEl;
+    evt.relatedRect = targetRect || toEl.getBoundingClientRect();
+    evt.willInsertAfter = willInsertAfter;
+    evt.originalEvent = originalEvt;
+
+    fromEl.dispatchEvent(evt);
+
+    if(onMoveFn) {
+      retVal = onMoveFn.call(draggr, evt, originalEvt);
+    }
+    return retVal;
+  }
+
+
+  function _index(el) {
+    let i = 0;
+
+    if(!el || !el.parentNode) {
+      return -1;
+    }
+
+    while(el && (el = el.previousElementSibling)) {
+      if(_matches(el, '.draggr-item')) {
+        i++;
+      }
+    }
+
+    return i;
+  }
 
 
   function _toggleClass(el, name, state) {
@@ -677,6 +656,23 @@ console.log("LOADED draggr.js");
     }
   }
 
+
+  function _matches(el, selector) {
+    // wrap in fx to handle the failed case, and also IE's
+    // goofy implementation.
+    if(el) {
+      try{
+        if(el.matches) {
+          return el.matches(selector);
+        } else if(el.msMatchesSelector) { // fracking IE
+          return el.msMatchesSelector(selector);
+        }
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  }
 
 
   function _extend(dest, src) {
