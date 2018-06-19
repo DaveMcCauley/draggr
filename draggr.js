@@ -29,7 +29,7 @@ console.log("LOADED draggr.js");
     rootEl,
     // deprecate: nextEl,
     moveEl,
-    parent2b,
+    prevEl,
     // deprecate: dragOffsetX,
     dragStartX,
     dragStartY,
@@ -137,7 +137,8 @@ console.log("LOADED draggr.js");
     _dragTouchStart: function (evt, touch) {
       dropChild = false;
       moveEl = evt.target;
-      parent2b = evt.target.previousElementSibling;
+      prevEl = evt.target.previousElementSibling;
+      _toggleClass(prevEl, 'draggr-prevEl', true);
       // for debug;
 
       rootEl = parentEl = evt.target.parentElement;
@@ -172,8 +173,6 @@ console.log("LOADED draggr.js");
 
         _toggleClass(ghostEl, this.options.ghostClass, true);
       }
-
-
 
       if(!dropzoneEl) {
         let rect = moveEl.getBoundingClientRect();
@@ -241,7 +240,7 @@ console.log("LOADED draggr.js");
       // moveEl.style.position = 'absolute';
       // moveEl.style.zIndex = '-9999';
       if(!moveEl.style.display) {
-        parent2b = moveEl.previousElementSibling;
+        //parent2b = moveEl.previousElementSibling;
         moveEl.style.display = 'none';
         return;
       }
@@ -254,41 +253,76 @@ console.log("LOADED draggr.js");
       lastY = currentY;
 
       // move the dropzone
-      let prevEl = target.closest('.draggr-item');
+      // dont' need this as I've killed off events on children.
+      // this is always going to be the target!
+      // let prevEl = target.closest('.draggr-item');
+
+      // DEBUG TEST
+      if(!target.classList.contains('draggr-item')){
+        console.log("NOT AN ITEM!!!!!!!!!");
+      }
 
       // super janky. But it's "working".
-      _toggleClass(parent2b, this.options.parentClass, false);
-      if(prevEl && prevEl.previousElementSibling && prevEl.previousElementSibling.classList.contains('moveEl')) {
-        parent2b = prevEl.previousElementSibling.previousElementSibling;
-      }
-      else {
-        parent2b = prevEl.previousElementSibling;
-      }
+      // _toggleClass(parent2b, this.options.parentClass, false);
+      // if(prevEl && prevEl.previousElementSibling && prevEl.previousElementSibling.classList.contains('moveEl')) {
+      //   parent2b = prevEl.previousElementSibling.previousElementSibling;
+      // }
+      // else {
+      //   parent2b = prevEl.previousElementSibling;
+      // }
 
-      // they have to share the same parent, otherwise they could be parent/child
-      if(prevEl && (target.parentNode === prevEl.parentNode)) {
-        var rect = prevEl.getBoundingClientRect();
-        // try it with half/half
-        var next = (currentY - rect.top)/(rect.bottom - rect.top) > .5;
-        if(!dropzoneEl.contains(prevEl.parentNode)) {
-          prevEl.parentNode.insertBefore(dropzoneEl, next && prevEl.nextSibling || !next && prevEl || null);
-          // this doesnt work becaue prevEl.previuous element could be draggr-ghost.
-          // so could prevEl.... uggg. so many fucking edge cases.
+      // they have to share the same parent, otherwise they could be parent/child,
+      // or we have moved to a different list altogether.
+      if(target.parentNode === parentEl) {
+        // now if we're NOT over dragzone, we move above or below the
+        // dragged item.
+        if(target !== dropzoneEl && target !== moveEl) {
+          var rect = target.getBoundingClientRect();
+          // try it with half/half
+          var next = (currentY - rect.top)/(rect.bottom - rect.top) > .5;
 
+          // yes, it needs to be like this to debounce it.
+          if(next && target.nextSibling !== dropzoneEl) {
+            // move it down.
+            target.parentNode.insertBefore(dropzoneEl, target.nextSibling || null);
+            _toggleClass(prevEl, 'draggr-prevEl', false);
+            prevEl = _closestItem(dropzoneEl);
+            _toggleClass(prevEl, 'draggr-prevEl', true);
+          }
+          else if(!next && target.previousElementSibling !== dropzoneEl) {
+            target.parentNode.insertBefore(dropzoneEl, target || null);
+            _toggleClass(prevEl, 'draggr-prevEl', false);
+            prevEl = _closestItem(dropzoneEl);
+            _toggleClass(prevEl, 'draggr-prevEl', true);
+          }
+
+          // if(!dropzoneEl.contains(target.parentNode)) {
+          //   target.parentNode.insertBefore(dropzoneEl, next && target.nextSibling || !next && target || null);
+          //               _toggleClass(prevEl, 'draggr-prevEl', false);
+          //   prevEl = _closestItem(dragzoneEl);
+          //   _toggleClass(prevEl, 'draggr-prevEl', true);
+
+          // //if(next) {
+          //   // update teh previous element after we move it.
+          //   // for now, always update.
+          //   // TODO: HACK. OPtimize this good grief.
+          //   var oldPrevEl = prevEl;
+          //   prevEl = _closestItem(dropzoneEl);
+          //   if(oldPrevEl != prevEl) {
+          //     _toggleClass(oldPrevEl, 'draggr-prevEl', false);
+          //     _toggleClass(prevEl, 'draggr-prevEl', true);
+          //   }
+          // //}
         }
       }
-
-      // let's us switch parents with no restriction. But...
-      // if we switched parents, update the parentEl property.
-      if(prevEl && (prevEl.parentNode !== parentEl)) {
-        // update the container style. TODO: use class?
-        parentEl.style.border = "";
-        // update the current parent property. (may need this later)
-        parentEl = prevEl.parentNode;
-        //parentEl.style.border = "1px solid #f0f";
+      else {
+        // we've switched parents.
+        // update the parentEl.
+        parentEl = target.parentNode;
+        return;
       }
 
-      // bump if we are on the dropzone element and X > 50px offset from the side
+      // bump right if we are on the dropzone element and X > 50px offset from the side
       // we're going to be inserting the moveEl as a child of the preceding
       // element when (if?) we drop it.
       if(target === dropzoneEl) {
@@ -298,17 +332,14 @@ console.log("LOADED draggr.js");
         if((currentX > dragStartX + 50) && dropzoneEl.previousElementSibling) {
           dropzoneEl.style.marginLeft = "50px";
           dropChild = true;
-          _toggleClass(parent2b, this.options.parentClass, true);
-
-
-
+          //_toggleClass(parent2b, this.options.parentClass, true);
         }
         else if((currentX > dragStartX) && dropzoneEl.previousElementSibling) { //debounces the shift.
           // TODO: this may be where my laggy problem lies...
           return;
         }
         else {
-          _toggleClass(parent2b, this.options.parentClass, false);
+          //_toggleClass(parent2b, this.options.parentClass, false);
           dropzoneEl.style.marginLeft = "";
           dropChild = false;
         }
@@ -362,7 +393,8 @@ console.log("LOADED draggr.js");
           prevEl = _closestItem(target);
 
           // can't make it a child of itself and it needs a predecessor!
-          if(!(prevEl === moveEl) && prevEl.classList.contains('draggr-item')) {
+          //if(!(prevEl === moveEl) && prevEl.classList.contains('draggr-item')) {
+          if(prevEl) {
             let childs = prevEl.querySelector(".draggr .children");
             if (childs) {
               // TODO: don't add if childs already contains the moveEl
@@ -416,6 +448,12 @@ console.log("LOADED draggr.js");
         moveEl.style.zIndex = '';
         moveEl.style.opacity = '';
         moveEl.style.display = '';
+        _toggleClass(moveEl, 'moveEl', false);
+      }
+
+      // reset prev el
+      if(prevEl) {
+        _toggleClass(prevEl, 'draggr-prevEl', false);
       }
 
       this._dispatchEvent(this, rootEl, 'end', moveEl, parentEl, rootEl, oldIndex, newIndex);
@@ -623,9 +661,12 @@ console.log("LOADED draggr.js");
     return dest;
   }
 
+
   function _closestItem(startEl) {
     let testEl = startEl.previousElementSibling;
-    while(testEl && (testEl.classList.contains('moveEl') || testEl.classList.contains('draggr-dropzone'))) {
+    // RESUME NOTE: You have moveEl, and dragzoneEl available. Just cmompare them directly here.
+    //              rather than using classes.
+    while(testEl && (testEl === prevEl || testEl === dropzoneEl)) {
       testEl = testEl.previousElementSibling;
     }
     return testEl;
