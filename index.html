@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-  <meta name="viewport" content="width=device-width, initial-scale=0.5"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link href="app.css" rel="stylesheet" type="text/css"/>
 </head>
 
@@ -63,6 +63,19 @@
     [].forEach.call(draggers, function(item) {
       Draggr.create(item);
     });
+  </script>
+  <script src="scopetest.js"></script>
+  <script>
+    // testing some scoping!
+    var Scopers = [
+      Scoper.create({name: 'A'}),
+      Scoper.create({name: 'B'})
+    ];
+    Scopers[0]._setClosureVar("Ungabuna!");
+    Scopers[0]._whoami();
+    Scopers[1]._whoami();
+    Scopers[0]._genericHandler({name: 'fingafanga'});
+    Scopers[0]._whoami();
   </script>
 </body>
 </html>

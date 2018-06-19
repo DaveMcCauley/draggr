@@ -38,6 +38,25 @@
 .draggr-ghost {
   color: rgb(102, 138, 255);
   height: 50px;
-  border: 1px solid rgb(128, 159, 255);
+  border: 3px solid rgb(255, 0, 0);
   background: rgba(230, 236, 255, .8);
+  opacity: .5;
+  z-index: 100;
+}
+
+
+.draggr-dropzone {
+  border: 2px solid green;
+  background: rgb(240, 240, 255);
+  z-index: 1;
+}
+
+.draggr-parent {
+  padding-left: 49px;
+  background: rgba(255, 0, 0, .3);
+}
+
+.draggr-prevEl {
+  border: 3px dashed #0ff;
+}
 }
