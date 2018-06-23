@@ -1,5 +1,4 @@
-
-console.log("LOADED draggr.js");
+/* eslint-disable */
 
 (function draggrModule(factory) {
   "use strict";
@@ -74,7 +73,7 @@ console.log("LOADED draggr.js");
     }
 
     // TODO: REMOVE IT"S JUST FOR DEBUGGING
-    this._onDispatch = this._onDispatch.bind(this);
+    // this._onDispatch = this._onDispatch.bind(this);
 
     // TODO: Consider binding only on tap/drag start?
     // bind the events to el
@@ -87,11 +86,11 @@ console.log("LOADED draggr.js");
     constructor: Draggr,
 
     _bindEvents: function(el) {
-      el.addEventListener('dragstart', this._onDragStart, false);
-      el.addEventListener('dragover', this._onDragOver, false);
-      el.addEventListener('dragleave', this._onDragLeave, false);
-      el.addEventListener('dragend', this._onDragEnd, false);
-      el.addEventListener('drop', this._onDrop, false);
+      el.addEventListener('dragstart', this._onDragStart, true);
+      el.addEventListener('dragover', this._onDragOver, true);
+      el.addEventListener('dragleave', this._onDragLeave, true);
+      el.addEventListener('dragend', this._onDragEnd, true);
+      el.addEventListener('drop', this._onDrop, true);
 
       el.addEventListener('touchstart', this._onTouchStart, true);
       el.addEventListener('touchmove', this._onTouchMove, true);
@@ -99,21 +98,21 @@ console.log("LOADED draggr.js");
       el.addEventListener('touchcancel', this._onTouchCancel, true);
 
     // TODO: REMOVE IT'S JUST FOR DEBUGGING....
-      el.addEventListener('choose', this._onDispatch, true);
-      el.addEventListener('add', this._onDispatch, true);
-      el.addEventListener('remove', this._onDispatch, true);
-      el.addEventListener('sort', this._onDispatch, true);
-      el.addEventListener('update', this._onDispatch, true);
-      el.addEventListener('end', this._onDispatch, true);
-      el.addEventListener('move', this._onDispatch, true);
+      // el.addEventListener('choose', this._onDispatch, true);
+      // el.addEventListener('add', this._onDispatch, true);
+      // el.addEventListener('remove', this._onDispatch, true);
+      // el.addEventListener('sort', this._onDispatch, true);
+      // el.addEventListener('update', this._onDispatch, true);
+      // el.addEventListener('end', this._onDispatch, true);
+      // el.addEventListener('move', this._onDispatch, true);
     ///////////////////////////////////////////////////////
 
     },
 
   // TODO: REMOVE IT's FOR DEBUGGING....
-    _onDispatch: function(evt) {
-      console.log("_onDispatch:", evt.type, " ", evt);
-    },
+    // _onDispatch: function(evt) {
+    //   console.log("_onDispatch:", evt.type, " ", evt);
+    // },
   //////////////////////////////////////////////////////
 
     _dragTouchStart: function (evt, touch) {
@@ -156,7 +155,8 @@ console.log("LOADED draggr.js");
         _toggleClass(dropzoneEl, this.options.dropzoneClass, true);
       }
 
-      _dispatchEvent(this, rootEl, 'choose', moveEl, rootEl, rootEl, oldIndex)
+      _dispatchEvent(this, rootEl, 'choose', moveEl, rootEl, rootEl, oldIndex, evt);
+      _dispatchEvent(this, rootEl, 'start', moveEl, moveEl, oldIndex, evt);
 
       // This is tricky. If we set the opacity to 0, dragEnd will get
       // called. If we don't handle it, we will get two drag images
@@ -351,23 +351,21 @@ console.log("LOADED draggr.js");
             dropzoneEl.parentNode.insertBefore(moveEl, dropzoneEl);
             let moveRect = moveEl.getBoundingClientRect();
             let targetRect = target.getBoundingClientRect();
-            _onMove(rootEl, this.el, moveEl, moveRect, target, targetRect, evt);
+            if(rootEl !== parentEl) {
+              newIndex = _index(dropzoneEl);
+              _dispatchEvent(this, parentEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex, evt); // dont' think I need the original event?
+              _dispatchEvent(null, rootEl, 'remove', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+              _dispatchEvent(this, parentEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+              _dispatchEvent(null, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+            }
+            else {
+              newIndex = _index(dropzoneEl);
+              _dispatchEvent(this, rootEl, 'update', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+              _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+            }
           }
         }
 
-        if(rootEl !== parentEl) {
-          newIndex = _index(moveEl);
-          console.log("newIndex: ", newIndex);
-          _dispatchEvent(this, rootEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex); // dont' think I need the original event?
-          _dispatchEvent(this, rootEl, 'remove', moveEl, parentEl, rootEl, oldIndex, newIndex);
-          _dispatchEvent(this, parentEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
-          _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
-        }
-        else {
-          newIndex = _index(moveEl);
-          _dispatchEvent(this, rootEl, 'update', moveEl, parentEl, rootEl, oldIndex, newIndex);
-          _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
-        }
       }
 
       // remove the ghost, we're done moving.
@@ -396,7 +394,7 @@ console.log("LOADED draggr.js");
         _toggleClass(prevEl, 'draggr-prevEl', false);
       }
 
-      _dispatchEvent(this, rootEl, 'end', moveEl, parentEl, rootEl, oldIndex, newIndex);
+      _dispatchEvent(this, rootEl, 'end', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
 
     },
 
@@ -430,11 +428,7 @@ console.log("LOADED draggr.js");
 
 
     _onDragLeave: function(evt) {
-      //console.log("_onDragLeave:", evt);
-      /*if(evt.target.className === 'draggr' && dropzoneEl && dropzoneEl.parentElement) {
-        dropzoneEl.parentElement.removeChild(dropzoneEl);
-      }*/
-      //console.log("onDragLeave:", evt);
+      // nothing for now...
     },
 
 
@@ -469,7 +463,6 @@ console.log("LOADED draggr.js");
 
     _onTouchCancel: function(evt) {
       evt.preventDefault();
-      //console.log("touchCancel: called");
     },
 
 
@@ -478,17 +471,25 @@ console.log("LOADED draggr.js");
       moveEl = null;
       dropzoneEl = null;
       ghostEl = null;
-      dragStartX = dragStartY = null;
+      dragStartX = dragStartY = undefined;
       touchEvt = null;
-      loopId = null;
-      lastX = null;
-      lastY = null;
+      loopId = undefined;
+      lastX = lastY = undefined;
+      parentEl = null;
+      rootEl= null;
+      prevEl = null;
+      dropChild = false;
+      oldIndex = newIndex = undefined; // TOOD:
+      touchEvt = null;
     }
 
   } // END OF PROTOTYPE  ///////////////////////////////////////////////////////
 
 
   function _dispatchEvent(draggr, rootEl, name, targetEl, toEl, fromEl, startIndex, newIndex, originalEvt) {
+
+    draggr = (draggr || rootEl[expando]);
+
     let evt = document.createEvent('Event'),
         options = draggr.options,
         onName = 'on' + name.charAt(0).toUpperCase() + name.substr(1);
@@ -499,12 +500,15 @@ console.log("LOADED draggr.js");
     evt.from = fromEl || rootEl;
     evt.item = targetEl || rootEl;
     evt.clone = null; // don't support cloning, but keep for API compatability.
-    evt.oldIndex = oldIndex;
+    evt.oldIndex = startIndex;
     evt.newIndex = newIndex;
     evt.originalEvent = originalEvt;
 
     rootEl.dispatchEvent(evt);
 
+    // CAUTION: if draggr is passed as a falsy the rootEl callback will be executed
+    // below. SO... the dispactched event will fire on a different element than
+    // the callback.
     if(options[onName]) {
       options[onName].call(draggr, evt);
     }
@@ -546,7 +550,7 @@ console.log("LOADED draggr.js");
     }
 
     while(el && (el = el.previousElementSibling)) {
-      if(_matches(el, '.draggr-item')) {
+      if(_matches(el, '.draggr-item') && el !== moveEl && el !== dropzoneEl) {
         i++;
       }
     }
