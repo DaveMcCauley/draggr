@@ -258,7 +258,7 @@
 
       }
       else {
-        // we've switched parents. Updat the parentEl.
+        // we've switched parents. Update the parentEl.
         parentEl = target.parentNode;
         return;
       }
@@ -353,7 +353,8 @@
             let targetRect = target.getBoundingClientRect();
             if(rootEl !== parentEl) {
               newIndex = _index(dropzoneEl);
-              _dispatchEvent(this, parentEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex, evt); // dont' think I need the original event?
+              var parentDrag = parentEl[expando];  // must call from parent, as touch uses 'this' will always be the source draggr.
+              _dispatchEvent(parentDrag, parentEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex, evt); // dont' think I need the original event?
               _dispatchEvent(null, rootEl, 'remove', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
               _dispatchEvent(this, parentEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
               _dispatchEvent(null, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
