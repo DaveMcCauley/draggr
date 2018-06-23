@@ -1,5 +1,5 @@
-
-console.log("LOADED draggr.js");
+/* eslint-disable */
+console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
 
 (function draggrModule(factory) {
   "use strict";
@@ -156,7 +156,14 @@ console.log("LOADED draggr.js");
         _toggleClass(dropzoneEl, this.options.dropzoneClass, true);
       }
 
-      _dispatchEvent(this, rootEl, 'choose', moveEl, rootEl, rootEl, oldIndex)
+      _dispatchEvent(this, rootEl, 'choose', moveEl, rootEl, rootEl, oldIndex, evt);
+
+      console.log("\n\nDISPATCHING THE 'start' EVENT")
+      console.log("draggr.js:methods:_dragTouchStart");
+      console.log("  this:", this);
+      console.log("  evt:", evt);
+
+      _dispatchEvent(this, rootEl, 'start', moveEl, moveEl, oldIndex, evt);
 
       // This is tricky. If we set the opacity to 0, dragEnd will get
       // called. If we don't handle it, we will get two drag images
@@ -356,17 +363,19 @@ console.log("LOADED draggr.js");
         }
 
         if(rootEl !== parentEl) {
-          newIndex = _index(moveEl);
-          console.log("newIndex: ", newIndex);
-          _dispatchEvent(this, rootEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex); // dont' think I need the original event?
-          _dispatchEvent(this, rootEl, 'remove', moveEl, parentEl, rootEl, oldIndex, newIndex);
-          _dispatchEvent(this, parentEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
-          _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
+          newIndex = _index(dropzoneEl);
+          console.log("  >>>>  dispatching the add/remove events");
+          console.log("  newIndex: ", newIndex);
+          _dispatchEvent(this, parentEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex, evt); // dont' think I need the original event?
+         _dispatchEvent(this, rootEl, 'remove', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+          _dispatchEvent(this, parentEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+          _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
         }
         else {
-          newIndex = _index(moveEl);
-          _dispatchEvent(this, rootEl, 'update', moveEl, parentEl, rootEl, oldIndex, newIndex);
-          _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex);
+          newIndex = _index(dropzoneEl);
+          console.log("  >>>>  dispatching an update event");
+          _dispatchEvent(this, rootEl, 'update', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+          _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
         }
       }
 
@@ -396,7 +405,7 @@ console.log("LOADED draggr.js");
         _toggleClass(prevEl, 'draggr-prevEl', false);
       }
 
-      _dispatchEvent(this, rootEl, 'end', moveEl, parentEl, rootEl, oldIndex, newIndex);
+      _dispatchEvent(this, rootEl, 'end', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
 
     },
 
@@ -441,6 +450,9 @@ console.log("LOADED draggr.js");
 
     _onDragEnd: function(evt) {
 
+      //TODO: DEBUG
+      console.log("\n\n\ndraggr.js:methods:_onDragEnd", evt);
+
       // remove the ghost, we're done moving.
       if(ghostEl && ghostEl.parentElement) {
         ghostEl.parentElement.removeChild(ghostEl);
@@ -475,20 +487,29 @@ console.log("LOADED draggr.js");
 
 
     _nullify: function() {
+      console.log("draggr.js:methods:_nullify  >>>>>>>>>>>>>>>>>>>>>>>>>");
       moveEl = null;
       dropzoneEl = null;
       ghostEl = null;
-      dragStartX = dragStartY = null;
+      dragStartX = dragStartY = undefined;
       touchEvt = null;
-      loopId = null;
-      lastX = null;
-      lastY = null;
+      loopId = undefined;
+      lastX = lastY = undefined;
+      parentEl = null;
+      rootEl= null;
+      prevEl = null;
+      dropChild = false;
+      oldIndex = newIndex = undefined; // TOOD:
+      touchEvt = null;
     }
 
   } // END OF PROTOTYPE  ///////////////////////////////////////////////////////
 
 
   function _dispatchEvent(draggr, rootEl, name, targetEl, toEl, fromEl, startIndex, newIndex, originalEvt) {
+
+    draggr = (draggr || rootEl[expando]);
+
     let evt = document.createEvent('Event'),
         options = draggr.options,
         onName = 'on' + name.charAt(0).toUpperCase() + name.substr(1);
@@ -499,7 +520,7 @@ console.log("LOADED draggr.js");
     evt.from = fromEl || rootEl;
     evt.item = targetEl || rootEl;
     evt.clone = null; // don't support cloning, but keep for API compatability.
-    evt.oldIndex = oldIndex;
+    evt.oldIndex = startIndex;
     evt.newIndex = newIndex;
     evt.originalEvent = originalEvt;
 
@@ -546,7 +567,7 @@ console.log("LOADED draggr.js");
     }
 
     while(el && (el = el.previousElementSibling)) {
-      if(_matches(el, '.draggr-item')) {
+      if(_matches(el, '.draggr-item') && el !== moveEl && el !== dropzoneEl) {
         i++;
       }
     }
