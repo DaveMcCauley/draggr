@@ -113,6 +113,7 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
   // TODO: REMOVE IT's FOR DEBUGGING....
     _onDispatch: function(evt) {
       console.log("_onDispatch:", evt.type, " ", evt);
+      console.log("  this:", this);
     },
   //////////////////////////////////////////////////////
 
@@ -157,12 +158,6 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
       }
 
       _dispatchEvent(this, rootEl, 'choose', moveEl, rootEl, rootEl, oldIndex, evt);
-
-      console.log("\n\nDISPATCHING THE 'start' EVENT")
-      console.log("draggr.js:methods:_dragTouchStart");
-      console.log("  this:", this);
-      console.log("  evt:", evt);
-
       _dispatchEvent(this, rootEl, 'start', moveEl, moveEl, oldIndex, evt);
 
       // This is tricky. If we set the opacity to 0, dragEnd will get
@@ -358,25 +353,23 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
             dropzoneEl.parentNode.insertBefore(moveEl, dropzoneEl);
             let moveRect = moveEl.getBoundingClientRect();
             let targetRect = target.getBoundingClientRect();
-            _onMove(rootEl, this.el, moveEl, moveRect, target, targetRect, evt);
+            // _onMove(rootEl, this.el, moveEl, moveRect, target, targetRect, evt);
+            console.trace();
+            if(rootEl !== parentEl) {
+              newIndex = _index(dropzoneEl);
+              _dispatchEvent(this, parentEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex, evt); // dont' think I need the original event?
+              _dispatchEvent(null, rootEl, 'remove', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+              _dispatchEvent(this, parentEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+              _dispatchEvent(null, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+            }
+            else {
+              newIndex = _index(dropzoneEl);
+              _dispatchEvent(this, rootEl, 'update', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+              _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
+            }
           }
         }
 
-        if(rootEl !== parentEl) {
-          newIndex = _index(dropzoneEl);
-          console.log("  >>>>  dispatching the add/remove events");
-          console.log("  newIndex: ", newIndex);
-          _dispatchEvent(this, parentEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex, evt); // dont' think I need the original event?
-         _dispatchEvent(this, rootEl, 'remove', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
-          _dispatchEvent(this, parentEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
-          _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
-        }
-        else {
-          newIndex = _index(dropzoneEl);
-          console.log("  >>>>  dispatching an update event");
-          _dispatchEvent(this, rootEl, 'update', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
-          _dispatchEvent(this, rootEl, 'sort', moveEl, parentEl, rootEl, oldIndex, newIndex, evt);
-        }
       }
 
       // remove the ghost, we're done moving.
@@ -487,7 +480,6 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
 
 
     _nullify: function() {
-      console.log("draggr.js:methods:_nullify  >>>>>>>>>>>>>>>>>>>>>>>>>");
       moveEl = null;
       dropzoneEl = null;
       ghostEl = null;
