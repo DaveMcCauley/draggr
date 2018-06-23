@@ -1,5 +1,4 @@
 /* eslint-disable */
-console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
 
 (function draggrModule(factory) {
   "use strict";
@@ -74,7 +73,7 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
     }
 
     // TODO: REMOVE IT"S JUST FOR DEBUGGING
-    this._onDispatch = this._onDispatch.bind(this);
+    // this._onDispatch = this._onDispatch.bind(this);
 
     // TODO: Consider binding only on tap/drag start?
     // bind the events to el
@@ -87,11 +86,11 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
     constructor: Draggr,
 
     _bindEvents: function(el) {
-      el.addEventListener('dragstart', this._onDragStart, false);
-      el.addEventListener('dragover', this._onDragOver, false);
-      el.addEventListener('dragleave', this._onDragLeave, false);
-      el.addEventListener('dragend', this._onDragEnd, false);
-      el.addEventListener('drop', this._onDrop, false);
+      el.addEventListener('dragstart', this._onDragStart, true);
+      el.addEventListener('dragover', this._onDragOver, true);
+      el.addEventListener('dragleave', this._onDragLeave, true);
+      el.addEventListener('dragend', this._onDragEnd, true);
+      el.addEventListener('drop', this._onDrop, true);
 
       el.addEventListener('touchstart', this._onTouchStart, true);
       el.addEventListener('touchmove', this._onTouchMove, true);
@@ -99,22 +98,21 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
       el.addEventListener('touchcancel', this._onTouchCancel, true);
 
     // TODO: REMOVE IT'S JUST FOR DEBUGGING....
-      el.addEventListener('choose', this._onDispatch, true);
-      el.addEventListener('add', this._onDispatch, true);
-      el.addEventListener('remove', this._onDispatch, true);
-      el.addEventListener('sort', this._onDispatch, true);
-      el.addEventListener('update', this._onDispatch, true);
-      el.addEventListener('end', this._onDispatch, true);
-      el.addEventListener('move', this._onDispatch, true);
+      // el.addEventListener('choose', this._onDispatch, true);
+      // el.addEventListener('add', this._onDispatch, true);
+      // el.addEventListener('remove', this._onDispatch, true);
+      // el.addEventListener('sort', this._onDispatch, true);
+      // el.addEventListener('update', this._onDispatch, true);
+      // el.addEventListener('end', this._onDispatch, true);
+      // el.addEventListener('move', this._onDispatch, true);
     ///////////////////////////////////////////////////////
 
     },
 
   // TODO: REMOVE IT's FOR DEBUGGING....
-    _onDispatch: function(evt) {
-      console.log("_onDispatch:", evt.type, " ", evt);
-      console.log("  this:", this);
-    },
+    // _onDispatch: function(evt) {
+    //   console.log("_onDispatch:", evt.type, " ", evt);
+    // },
   //////////////////////////////////////////////////////
 
     _dragTouchStart: function (evt, touch) {
@@ -353,8 +351,6 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
             dropzoneEl.parentNode.insertBefore(moveEl, dropzoneEl);
             let moveRect = moveEl.getBoundingClientRect();
             let targetRect = target.getBoundingClientRect();
-            // _onMove(rootEl, this.el, moveEl, moveRect, target, targetRect, evt);
-            console.trace();
             if(rootEl !== parentEl) {
               newIndex = _index(dropzoneEl);
               _dispatchEvent(this, parentEl, 'add', moveEl, parentEl, rootEl, oldIndex, newIndex, evt); // dont' think I need the original event?
@@ -432,19 +428,12 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
 
 
     _onDragLeave: function(evt) {
-      //console.log("_onDragLeave:", evt);
-      /*if(evt.target.className === 'draggr' && dropzoneEl && dropzoneEl.parentElement) {
-        dropzoneEl.parentElement.removeChild(dropzoneEl);
-      }*/
-      //console.log("onDragLeave:", evt);
+      // nothing for now...
     },
 
 
 
     _onDragEnd: function(evt) {
-
-      //TODO: DEBUG
-      console.log("\n\n\ndraggr.js:methods:_onDragEnd", evt);
 
       // remove the ghost, we're done moving.
       if(ghostEl && ghostEl.parentElement) {
@@ -474,7 +463,6 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
 
     _onTouchCancel: function(evt) {
       evt.preventDefault();
-      //console.log("touchCancel: called");
     },
 
 
@@ -518,6 +506,9 @@ console.log("LOADED draggr.js (loco copy in /vue-draggr/ folder");
 
     rootEl.dispatchEvent(evt);
 
+    // CAUTION: if draggr is passed as a falsy the rootEl callback will be executed
+    // below. SO... the dispactched event will fire on a different element than
+    // the callback.
     if(options[onName]) {
       options[onName].call(draggr, evt);
     }
