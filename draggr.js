@@ -86,16 +86,16 @@
     constructor: Draggr,
 
     _bindEvents: function(el) {
-      el.addEventListener('dragstart', this._onDragStart, true);
-      el.addEventListener('dragover', this._onDragOver, true);
-      el.addEventListener('dragleave', this._onDragLeave, true);
-      el.addEventListener('dragend', this._onDragEnd, true);
-      el.addEventListener('drop', this._onDrop, true);
+      el.addEventListener('dragstart', this._onDragStart, false);
+      el.addEventListener('dragover', this._onDragOver, false);
+      el.addEventListener('dragleave', this._onDragLeave, false);
+      el.addEventListener('dragend', this._onDragEnd, false);
+      el.addEventListener('drop', this._onDrop, false);
 
-      el.addEventListener('touchstart', this._onTouchStart, true);
-      el.addEventListener('touchmove', this._onTouchMove, true);
-      el.addEventListener('touchend', this._onTouchEnd, true);
-      el.addEventListener('touchcancel', this._onTouchCancel, true);
+      el.addEventListener('touchstart', this._onTouchStart, false);
+      el.addEventListener('touchmove', this._onTouchMove, false);
+      el.addEventListener('touchend', this._onTouchEnd, false);
+      el.addEventListener('touchcancel', this._onTouchCancel, false);
 
     // TODO: REMOVE IT'S JUST FOR DEBUGGING....
       // el.addEventListener('choose', this._onDispatch, true);
@@ -116,6 +116,7 @@
   //////////////////////////////////////////////////////
 
     _dragTouchStart: function (evt, touch) {
+
       dropChild = false;
       moveEl = evt.target;
       prevEl = evt.target.previousElementSibling;
@@ -181,6 +182,7 @@
 
 
     _onDragStart: function(evt) {
+      evt.stopPropagation();
       this._dragTouchStart(evt);
       evt.dataTransfer.effectAllowed = 'move';
       evt.dataTransfer.setData('text/html', 'Ungabunga');
@@ -189,6 +191,7 @@
 
 
     _onTouchStart: function(evt) {
+      evt.stopPropagation();
       evt.preventDefault();
       this._dragTouchStart(evt, true);
       // TODO: provide option for interval
@@ -323,26 +326,29 @@
 
     _dragTouchDrop: function(target, evt) {
 
-      // TODO: REFACTOR to use closure-scoped prevEl rather than local.
-
       if(target === dropzoneEl) {
         if(dropChild) {
           // let prevEl = dropzoneEl.previousSibling;  // needs to be 'closest'
-          let prevEl = dropzoneEl.previousElementSibling;
 
           prevEl = _closestItem(target);
 
           // can't make it a child of itself and it needs a predecessor!
           //if(!(prevEl === moveEl) && prevEl.classList.contains('draggr-item')) {
           if(prevEl) {
-            let childs = prevEl.querySelector(".draggr .children");
-            if (childs) {
+            let newParentEl = prevEl.querySelector(".children"); // TODO: add class name this to the config
+            if (newParentEl) {
               // TODO: don't add if childs already contains the moveEl
-              childs.appendChild(moveEl);
+              newParentEl.appendChild(moveEl);
               // call teh move event handler
               let moveRect = moveEl.getBoundingClientRect();
               let targetRect = target.getBoundingClientRect();
-              _onMove(rootEl, this.el, moveEl, moveRect, target, targetRect, evt);
+              //newIndex = _index(dropzoneEl);
+              newIndex = newParentEl.childElementCount - 1; // dont' forget to account for the one we just added!
+              var newParentDrag = newParentEl[expando];  // must call from parent, as touch uses 'this' will always be the source draggr.
+              _dispatchEvent(newParentDrag, newParentEl, 'add', moveEl, newParentEl, rootEl, oldIndex, newIndex, evt); // dont' think I need the original event?
+              _dispatchEvent(null, rootEl, 'remove', moveEl, newParentEl, rootEl, oldIndex, newIndex, evt);
+              _dispatchEvent(this, newParentEl, 'sort', moveEl, newParentEl, rootEl, oldIndex, newIndex, evt);
+              _dispatchEvent(null, rootEl, 'sort', moveEl, newParentEl, rootEl, oldIndex, newIndex, evt);
             }
           }
         }
@@ -418,6 +424,7 @@
 
     _onTouchEnd: function(evt) {
       evt.preventDefault();
+      evt.stopPropagation();
       // stop the emulated drag!
       clearInterval(loopId);
       if(ghostEl) ghostEl.style.display = 'none';
